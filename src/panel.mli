@@ -3,5 +3,10 @@ type t
 
 include Jv.CONV with type t := t
 
-
-val create : ?mount:(unit -> unit) -> ?update:(Editor.View.Update.t -> unit) -> ?top:bool -> ?pos:int -> Brr.El.t -> t
+val create :
+  ?mount:(unit -> unit) ->
+  ?update:(Editor.View.Update.t -> unit) ->
+  ?top:bool ->
+  ?pos:int ->
+  Brr.El.t ->
+  t
