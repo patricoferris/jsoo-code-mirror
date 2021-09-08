@@ -1,0 +1,6 @@
+(library
+ (name code_mirror)
+ (public_name code-mirror)
+ (js_of_ocaml
+  (javascript_files codemirror.js))
+ (libraries brr js_of_ocaml))
