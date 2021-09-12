@@ -16,6 +16,8 @@ module State : sig
   end
 
   val create : ?config:Config.t -> unit -> t
+
+  val doc : t -> Text.t
 end
 
 module View : sig
@@ -38,6 +40,9 @@ module View : sig
 
   val create : ?opts:opts -> unit -> t
   (** Create a new view *)
+
+  val state : t -> State.t
+  (** Current editor state *)
 
   module Update : sig
     type t
