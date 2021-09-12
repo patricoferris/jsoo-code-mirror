@@ -1,3 +1,7 @@
+type t = Jv.t
+
+include (Jv.Id : Jv.CONV with type t := t)
+
 module Line = struct
   type t = Jv.t
 
@@ -11,3 +15,9 @@ module Line = struct
 
   let length t = Jv.Int.get t "length"
 end
+
+let length t = Jv.Int.get t "length"
+
+let line n t = Jv.call t "line" [| Jv.of_int n |]
+
+let to_jstr_array t = Jv.call t "toJSON" [||] |> Jv.to_jstr_array

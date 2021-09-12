@@ -18,6 +18,8 @@ module State = struct
   let create ?(config = Jv.undefined) () =
     let editor_state = Jv.get Jv.global "__CM__state" in
     Jv.call editor_state "create" [| config |]
+
+  let doc t = Jv.get t "doc" |> Text.of_jv
 end
 
 module View = struct
@@ -37,6 +39,8 @@ module View = struct
 
   let create ?(opts = Jv.undefined) () =
     Jv.new' (Jv.get Jv.global "__CM__view") [| opts |]
+
+  let state t = Jv.get t "state" |> State.of_jv
 
   (* TODO *)
   module Update = struct

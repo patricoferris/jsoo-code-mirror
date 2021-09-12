@@ -1,3 +1,7 @@
+type t
+
+include Jv.CONV with type t := t
+
 module Line : sig
   type t
   (** A text line *)
@@ -17,3 +21,10 @@ module Line : sig
   val length : t -> int
   (** The length of the line *)
 end
+
+val length : t -> int
+(** Length of the text *)
+
+val line : int -> t -> Line.t
+
+val to_jstr_array : t -> Jstr.t array
