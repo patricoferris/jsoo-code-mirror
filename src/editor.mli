@@ -44,6 +44,8 @@ module View : sig
   val state : t -> State.t
   (** Current editor state *)
 
+  val set_state : t -> State.t -> unit
+
   module Update : sig
     type t
 

@@ -42,6 +42,8 @@ module View = struct
 
   let state t = Jv.get t "state" |> State.of_jv
 
+  let set_state t v = Jv.call t "setState" [| State.to_jv v |] |> ignore
+
   (* TODO *)
   module Update = struct
     type t = Jv.t
