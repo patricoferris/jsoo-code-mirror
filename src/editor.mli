@@ -15,6 +15,19 @@ module State : sig
       t
   end
 
+  module type Facet = sig
+    type t
+    include Jv.CONV with type t := t
+    type input 
+    type output
+
+    val of_ : t -> input -> Extension.t
+  end
+
+  module FacetMaker : functor (I : sig type t include Jv.CONV with type t := t end) -> Facet with type input = I.t
+
+  type ('i, 'o) facet = Facet : (module Facet with type input = 'i and type output = 'o and type t = 'a) * 'a -> ('i, 'o) facet
+
   val create : ?config:Config.t -> unit -> t
 
   val doc : t -> Text.t
@@ -49,6 +62,12 @@ module View : sig
   module Update : sig
     type t
 
+    val state : t -> State.t
+
     include Jv.CONV with type t := t
   end
+
+  val update_listener : unit -> (Update.t -> unit, Jv.t) State.facet
+
+  val line_wrapping : unit -> Extension.t
 end
