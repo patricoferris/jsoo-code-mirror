@@ -82,6 +82,8 @@ module View = struct
     include (Jv.Id : Jv.CONV with type t := t)
   end
 
+  let dom t = Jv.get t "dom" |> Brr.El.of_jv
+
   let update_listener _ : (Update.t -> unit, Jv.t) State.facet =
     let module F = State.FacetMaker (Func(Update)) in
     let jv = Jv.get g "updateListener" in 
