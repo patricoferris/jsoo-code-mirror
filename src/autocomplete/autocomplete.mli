@@ -18,26 +18,6 @@ module Completion : sig
     unit -> t
 end
 
-type config
-
-val config : 
-  ?activate_on_typing:bool -> 
-  ?override:Jv.t ->
-  ?max_rendered_options:int ->
-  ?default_key_map:bool ->
-  ?above_cursor:bool ->
-  ?option_class:Jv.t ->
-  ?icons:bool ->
-  ?add_to_options:Jv.t ->
-  unit ->
-  config
-  (** Configuration options for your autocompleter, see {{: https://codemirror.net/6/docs/ref/#autocomplete.autocompletion^config} the online docs}.*)
-
-val create :
-  ?config:config -> unit ->
-  Code_mirror.Extension.t
-  (** Autocompleter *)
-
 module Context : sig
   type t
   (** Completion context *)
@@ -67,3 +47,24 @@ end
 
 type source = Context.t -> Result.t option Fut.t
 (** A completion source *)
+
+
+type config
+
+val config : 
+  ?activate_on_typing:bool -> 
+  ?override:source list ->
+  ?max_rendered_options:int ->
+  ?default_key_map:bool ->
+  ?above_cursor:bool ->
+  ?option_class:Jv.t ->
+  ?icons:bool ->
+  ?add_to_options:Jv.t ->
+  unit ->
+  config
+  (** Configuration options for your autocompleter, see {{: https://codemirror.net/6/docs/ref/#autocomplete.autocompletion^config} the online docs}.*)
+
+val create :
+  ?config:config -> unit ->
+  Code_mirror.Extension.t
+  (** Autocompleter *)

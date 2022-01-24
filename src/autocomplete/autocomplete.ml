@@ -26,47 +26,6 @@ module Completion = struct
 
 end
 
-type config = Jv.t
-
-let config 
-  ?activate_on_typing
-  ?override
-  ?max_rendered_options
-  ?default_key_map
-  ?above_cursor
-  ?option_class
-  ?icons
-  ?add_to_options
-  () = 
-  let o = Jv.obj [||] in
-   Jv.Bool.set_if_some o "activateOnTyping" activate_on_typing;
-   Jv.set_if_some o "override" override;
-   Jv.Int.set_if_some o "maxRenderedOptions" max_rendered_options;
-   Jv.Bool.set_if_some o "defaultKeyMap" default_key_map;
-   Jv.Bool.set_if_some o "aboveCursor" above_cursor;
-   Jv.set_if_some o "optionClass" option_class;
-   Jv.Bool.set_if_some o "icons" icons;
-   Jv.set_if_some o "addToOptions" add_to_options;
-   o
-
-let create ?(config = Jv.null) () =
-  Extension.of_jv @@
-  Jv.call autocomplete "autocompletion" [| config |]
-
-(* type status = Active | Pending
-
-let status state = 
-
-val status : Editor.State.t -> status option
-(** Gets the current completion status *)
-
-val current_completions : Editor.State.t -> Completion.t list
-(** Returns the current available completions *)
-
-val selected_completion : Editor.State.t -> Completion.t option
-* Returh the currently selected completion if any *)
-
-
 module Context = struct
   type t = Jv.t
   (** Completion context *)
@@ -100,4 +59,51 @@ end
 
 type source = Context.t -> Result.t option Fut.t
 (** A completion source *)
+
+let source_to_jv (src : source) = 
+  let f ctx =
+    let fut = Fut.map (fun v -> Ok v) @@ src (Context.of_jv ctx) in
+    Fut.to_promise ~ok:(fun t -> Option.value ~default:Jv.null (Option.map Result.to_jv t)) fut
+  in
+    Jv.repr f
+
+type config = Jv.t
+
+let config 
+  ?activate_on_typing
+  ?override
+  ?max_rendered_options
+  ?default_key_map
+  ?above_cursor
+  ?option_class
+  ?icons
+  ?add_to_options
+  () =
+  let o = Jv.obj [||] in
+   Jv.Bool.set_if_some o "activateOnTyping" activate_on_typing;
+   Jv.set_if_some o "override" (Option.map (fun v -> Jv.of_list source_to_jv v) override);
+   Jv.Int.set_if_some o "maxRenderedOptions" max_rendered_options;
+   Jv.Bool.set_if_some o "defaultKeyMap" default_key_map;
+   Jv.Bool.set_if_some o "aboveCursor" above_cursor;
+   Jv.set_if_some o "optionClass" option_class;
+   Jv.Bool.set_if_some o "icons" icons;
+   Jv.set_if_some o "addToOptions" add_to_options;
+   o
+
+let create ?(config = Jv.null) () =
+  Extension.of_jv @@
+  Jv.call autocomplete "autocompletion" [| config |]
+
+(* type status = Active | Pending
+
+let status state = 
+
+val status : Editor.State.t -> status option
+(** Gets the current completion status *)
+
+val current_completions : Editor.State.t -> Completion.t list
+(** Returns the current available completions *)
+
+val selected_completion : Editor.State.t -> Completion.t option
+* Returh the currently selected completion if any *)
 
