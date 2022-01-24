@@ -34,11 +34,11 @@ module Context = struct
 
   let token_before t types =
     let jv = Jv.call t "tokenBefore" [| Jv.of_list Jv.of_string types |] in
-    if Jv.is_null jv then None else Some jv
+    if Jv.is_none jv then None else Some jv
 
   let match_before t regex =
     let jv = Jv.call t "matchBefore" [| RegExp.to_jv regex |] in
-    if Jv.is_null jv then None else Some jv
+    if Jv.is_none jv then None else Some jv
 end
 
 module Result = struct
