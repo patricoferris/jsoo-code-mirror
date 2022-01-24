@@ -8,8 +8,22 @@ module Completion = struct
 
   include (Jv.Id : Jv.CONV with type t := t)
 
-  let label t = Jv.Jstr.get t "label" |> Jstr.to_string
-  let detail t = Jv.Jstr.find t "detail" |> Option.map Jstr.to_string
+  let set_if_some_string t s v =
+    Jv.Jstr.set_if_some t s (Option.map Jstr.v v)
+
+  let set_string t s v =
+    Jv.Jstr.set t s (Jstr.v v)
+
+  let create ~label ?detail ?info ?apply ?type_ ?boost () =
+    let o = Jv.obj [||] in
+    set_string o "label" label;
+    set_if_some_string o "detail" detail;
+    set_if_some_string o "info" info;
+    Jv.set_if_some o "apply" apply;
+    set_if_some_string o "type" type_;
+    Jv.Int.set_if_some o "boost" boost; 
+    o
+
 end
 
 type config = Jv.t

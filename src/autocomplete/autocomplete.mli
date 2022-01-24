@@ -8,8 +8,14 @@ module Completion : sig
 
   include Jv.CONV with type t := t
 
-  val label : t -> string
-  val detail : t -> string option
+  val create :
+    label:string ->
+    ?detail:string ->
+    ?info:string -> 
+    ?apply:t ->
+    ?type_:string ->
+    ?boost:int ->
+    unit -> t
 end
 
 type config
