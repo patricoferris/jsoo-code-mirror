@@ -1,1 +1,0 @@
-joo_global_object.__CM__lint = require('@codemirror/lint');

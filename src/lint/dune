@@ -1,6 +1,4 @@
 (library
  (name lint)
- (js_of_ocaml
-  (javascript_files require.js))
  (public_name code-mirror.lint)
  (libraries code-mirror))
