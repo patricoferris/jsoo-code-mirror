@@ -30971,9 +30971,19 @@ var cm = {
     streamParser: require('@codemirror/stream-parser'),
     OCaml: require('@codemirror/legacy-modes/mode/mllike.cjs').oCaml,
   };
+
+  // Overwrite the defaults
+joo_global_object.__CM__view = cm.View;
+joo_global_object.__CM__state = cm.State;
+joo_global_object.__CM__lint = cm.lint;
+joo_global_object.__CM__autocomplete = cm.autocomplete;
+joo_global_object.__CM__basic_setup = cm.basicSetup
+joo_global_object.__CM__dark = cm.dark;
+joo_global_object.__CM__stream_parser = cm.streamParser;
+joo_global_object.__CM__mllike = cm.OCaml;
   
-  global.CodeMirror = cm;
-  module.exports = cm;
+global.CodeMirror = cm;
+module.exports = cm;
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"@codemirror/autocomplete":1,"@codemirror/basic-setup":2,"@codemirror/legacy-modes/mode/mllike.cjs":14,"@codemirror/lint":15,"@codemirror/stream-parser":23,"@codemirror/theme-one-dark":25}]},{},[32])(32)
 });
