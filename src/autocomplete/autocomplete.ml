@@ -112,7 +112,7 @@ let create ?(config = Jv.null) () =
 
 (* type status = Active | Pending
 
-let status state = 
+let status state =
 
 val status : Editor.State.t -> status option
 (** Gets the current completion status *)
@@ -122,4 +122,3 @@ val current_completions : Editor.State.t -> Completion.t list
 
 val selected_completion : Editor.State.t -> Completion.t option
 * Returh the currently selected completion if any *)
-
