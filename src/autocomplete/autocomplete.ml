@@ -21,7 +21,7 @@ module Completion = struct
     set_if_some_string o "info" info;
     Jv.set_if_some o "apply" apply;
     set_if_some_string o "type" type_;
-    Jv.Int.set_if_some o "boost" boost; 
+    Jv.Int.set_if_some o "boost" boost;
     o
 
 end
@@ -32,6 +32,12 @@ module Context = struct
 
   include (Jv.Id : Jv.CONV with type t := t)
 
+  let state t = Jv.get t "state" |> Editor.State.of_jv
+
+  let pos t = Jv.Int.get t "pos"
+
+  let explicit t = Jv.Bool.get t "explicit"
+
   let token_before t types =
     let jv = Jv.call t "tokenBefore" [| Jv.of_list Jv.of_string types |] in
     if Jv.is_none jv then None else Some jv
@@ -39,6 +45,8 @@ module Context = struct
   let match_before t regex =
     let jv = Jv.call t "matchBefore" [| RegExp.to_jv regex |] in
     if Jv.is_none jv then None else Some jv
+
+  let aborted t = Jv.Bool.get t "aborted"
 end
 
 module Result = struct
@@ -57,19 +65,27 @@ module Result = struct
     o
 end
 
-type source = Context.t -> Result.t option Fut.t
-(** A completion source *)
+module Source = struct
+  type t = Jv.t
 
-let source_to_jv (src : source) = 
-  let f ctx =
-    let fut = Fut.map (fun v -> Ok v) @@ src (Context.of_jv ctx) in
-    Fut.to_promise ~ok:(fun t -> Option.value ~default:Jv.null (Option.map Result.to_jv t)) fut
-  in
+  include (Jv.Id : Jv.CONV with type t := t)
+
+  let create (src : Context.t -> Result.t option Fut.t) =
+    let f ctx =
+      let fut = Fut.map (fun v -> Ok v) @@ src (Context.of_jv ctx) in
+      Fut.to_promise fut
+        ~ok:(fun t ->
+          Option.value ~default:Jv.null (Option.map Result.to_jv t))
+    in
     Jv.repr f
+
+  let from_list (l : Completion.t list) =
+    Jv.call autocomplete "completeFromList" [| Jv.of_jv_list l |] |> of_jv
+end
 
 type config = Jv.t
 
-let config 
+let config
   ?activate_on_typing
   ?override
   ?max_rendered_options
@@ -81,7 +97,7 @@ let config
   () =
   let o = Jv.obj [||] in
    Jv.Bool.set_if_some o "activateOnTyping" activate_on_typing;
-   Jv.set_if_some o "override" (Option.map (fun v -> Jv.of_list source_to_jv v) override);
+   Jv.set_if_some o "override" (Option.map (fun v -> Jv.of_jv_list v) override);
    Jv.Int.set_if_some o "maxRenderedOptions" max_rendered_options;
    Jv.Bool.set_if_some o "defaultKeyMap" default_key_map;
    Jv.Bool.set_if_some o "aboveCursor" above_cursor;
@@ -96,7 +112,7 @@ let create ?(config = Jv.null) () =
 
 (* type status = Active | Pending
 
-let status state = 
+let status state =
 
 val status : Editor.State.t -> status option
 (** Gets the current completion status *)
@@ -106,4 +122,3 @@ val current_completions : Editor.State.t -> Completion.t list
 
 val selected_completion : Editor.State.t -> Completion.t option
 * Returh the currently selected completion if any *)
-
