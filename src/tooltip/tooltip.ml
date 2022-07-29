@@ -1,7 +1,5 @@
 open Code_mirror
 
-let tooltip = Jv.get Jv.global "__CM__tooltip"
-
 module Tooltip_view = struct
   type t = Jv.t
 
@@ -93,6 +91,7 @@ let hover_config ?hide_on_change ?hover_time () =
   o
 
 let hover_tooltip ?config source =
+  (* let g = Jv.get Jv.global "__CM__hoverTooltip" in *)
   let source =
     Jv.repr @@ fun view pos side ->
     let fut =
@@ -107,4 +106,4 @@ let hover_tooltip ?config source =
     if Option.is_none config then [| source |]
     else [| source; Option.get config |]
   in
-  Jv.call tooltip "hoverTooltip" args |> Extension.of_jv
+  Jv.call Jv.global "__CM__hoverTooltip" args |> Extension.of_jv

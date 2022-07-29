@@ -73,7 +73,7 @@ module View = struct
 
   type opts = Jv.t
 
-  let opts ?state ?root ?dispatch ?parent () =
+  let opts ?state ?parent ?root ?dispatch () =
     let o = Jv.obj [||] in
     Jv.set_if_some o "state" state;
     Jv.set_if_some o "root" (Option.map Brr.Document.to_jv root);

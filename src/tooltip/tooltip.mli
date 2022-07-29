@@ -1,8 +1,5 @@
 open Code_mirror
 
-val tooltip : Jv.t
-(** Global tooltip value *)
-
 module Tooltip_view : sig
   (** Describes the way a tooltip is displayed. *)
 

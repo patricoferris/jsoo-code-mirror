@@ -56,9 +56,9 @@ module View : sig
   (* TODO: Dispatch function *)
   val opts :
     ?state:State.t ->
+    ?parent:Brr.El.t ->
     ?root:Brr.El.document ->
     ?dispatch:Jv.t ->
-    ?parent:Brr.El.t ->
     unit ->
     opts
 
