@@ -14,7 +14,7 @@ module Action = struct
     in
     let o = Jv.obj [||] in
     Jv.Jstr.set o "name" (Jstr.v name);
-    Jv.set o "apply" (Jv.repr f');
+    Jv.set o "apply" (Jv.wrap_callback f');
     o
 
   include (Jv.Id : Jv.CONV with type t := t)
@@ -72,5 +72,5 @@ let create ?delay
     in
     Fut.to_promise ~ok:Fun.id (Fut.map Result.ok fut)
   in
-  let ext = Jv.call lint "linter" [| Jv.repr source'; o |] in
+  let ext = Jv.call lint "linter" [| Jv.wrap_callback source'; o |] in
   Code_mirror.Extension.of_jv ext

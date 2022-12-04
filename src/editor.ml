@@ -63,7 +63,7 @@ end) =
 struct
   type t = I.t -> unit
 
-  let to_jv f = Jv.repr f
+  let to_jv f = Jv.wrap_callback f
 end
 
 module View = struct
