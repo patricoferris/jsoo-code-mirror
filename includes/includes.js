@@ -6,6 +6,7 @@ import * as autocomplete from "@codemirror/autocomplete"
 import * as dark from "@codemirror/theme-one-dark"
 import * as language from "@codemirror/language"
 import { oCaml } from "@codemirror/legacy-modes/mode/mllike"
+import { markdown } from "@codemirror/lang-markdown"
 
 joo_global_object.__CM__view = EditorView;
 joo_global_object.__CM__state = EditorState;
@@ -16,3 +17,4 @@ joo_global_object.__CM__basic_setup = basicSetup
 joo_global_object.__CM__dark = dark;
 joo_global_object.__CM__stream_parser = language;
 joo_global_object.__CM__mllike = oCaml;
+joo_global_object.__CM__markdown = markdown;
