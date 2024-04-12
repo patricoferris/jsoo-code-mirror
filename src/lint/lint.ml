@@ -7,7 +7,7 @@ module Action = struct
 
   let create ~name f =
     let f' view from to_ =
-      let view = Editor.View.of_jv view in
+      let view = View.of_jv view in
       let from = Jv.to_int from in
       let to_ = Jv.to_int to_ in
       f ~view ~from ~to_
@@ -59,8 +59,7 @@ module Diagnostic = struct
   include (Jv.Id : Jv.CONV with type t := t)
 end
 
-let create ?delay
-    (source : Code_mirror.Editor.View.t -> Diagnostic.t array Fut.t) =
+let create ?delay (source : Code_mirror.View.t -> Diagnostic.t array Fut.t) =
   let o =
     match delay with
     | None -> Jv.obj [||]
@@ -68,7 +67,7 @@ let create ?delay
   in
   let source' view =
     let fut =
-      Fut.map (Jv.of_array Diagnostic.to_jv) @@ source (Editor.View.of_jv view)
+      Fut.map (Jv.of_array Diagnostic.to_jv) @@ source (View.of_jv view)
     in
     Fut.to_promise ~ok:Fun.id (Fut.map Result.ok fut)
   in

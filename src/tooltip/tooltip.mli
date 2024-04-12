@@ -21,8 +21,8 @@ module Tooltip_view : sig
     ?offset:offset ->
     ?get_coords:(int -> coords) ->
     ?overlap:bool ->
-    ?mount:(Editor.View.t -> unit) ->
-    ?update:(Editor.View.Update.t -> unit) ->
+    ?mount:(View.t -> unit) ->
+    ?update:(View.Update.t -> unit) ->
     ?positioned:(unit -> unit) ->
     unit ->
     t
@@ -82,7 +82,7 @@ module Tooltip : sig
   val create :
     pos:int ->
     ?end_:int ->
-    create:(Editor.View.t -> Tooltip_view.t) ->
+    create:(View.t -> Tooltip_view.t) ->
     ?above:bool ->
     ?strict_side:bool ->
     ?arrow:bool ->
@@ -105,7 +105,7 @@ val hover_config :
 
 val hover_tooltip :
   ?config:hover_config ->
-  (view:Editor.View.t -> pos:int -> side:int -> Tooltip.t option Fut.t) ->
+  (view:View.t -> pos:int -> side:int -> Tooltip.t option Fut.t) ->
   Extension.t
 (** Enable a hover tooltip, which shows up when the pointer hovers over ranges
     of text. The callback is called when the mouse hovers over the document

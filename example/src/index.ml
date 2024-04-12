@@ -4,7 +4,6 @@ open Brr
 let basic_setup = Jv.get Jv.global "__CM__basic_setup" |> Extension.of_jv
 
 let init ?doc ?(exts = [||]) () =
-  let open Editor in
   let config =
     State.Config.create ?doc
       ~extensions:(Array.concat [ [| basic_setup |]; exts ])
