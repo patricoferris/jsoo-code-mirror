@@ -56,40 +56,19 @@ module State : sig
       t
   end
 
-  module type Facet = sig
-    type t
+  module Facet : sig
+    type ('input, 'output) t
 
-    include Jv.CONV with type t := t
+    val to_jv : ('input, 'output) t -> Jv.t
 
-    type input
-    type output
+    val of_ : ('input, 'output) t -> 'input -> Extension.t
 
-    val of_ : t -> input -> Extension.t
+    val from : ('input, 'output) t -> 'a Field.field -> Extension.t
 
-    val from : t -> 'a Field.field -> Extension.t
+    val from' : ('input, 'output) t -> 'a Field.field -> ('a -> 'input) -> Extension.t
 
-    val from' : t -> 'a Field.field -> ('a -> input) -> Extension.t
-
-
+    val create : 'input conv -> Jv.t -> ('input, 'output) t
   end
-
-
-  module FacetMaker : functor
-    (I : sig
-       type t
-       val to_jv : t -> Jv.t
-       val of_jv : Jv.t -> t
-     end)
-    -> Facet with type input = I.t and type output = Jv.t
-
-  type ('i, 'o) facet =
-    | Facet :
-        (module Facet with type input = 'i and type output = 'o and type t = 'a)
-        * 'a
-        -> ('i, 'o) facet
-
-  
-
 
   val create : ?config:Config.t -> unit -> t
   val field : t -> 'a Field.field -> 'a
@@ -131,7 +110,7 @@ module View : sig
   end
 
   val dom : t -> Brr.El.t
-  val update_listener : unit -> (Update.t -> unit, Jv.t) State.facet
+  val update_listener : unit -> (Update.t -> unit, Jv.t) State.Facet.t
   val line_wrapping : unit -> Extension.t
   val dispatch : t -> State.Transaction.t -> unit
 end
@@ -147,4 +126,4 @@ module Keymap : sig
 
 end 
 
-val keymap : (Keymap.t, Jv.t) State.facet
+val keymap : (Keymap.t, Jv.t) State.Facet.t

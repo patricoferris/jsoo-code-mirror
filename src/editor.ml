@@ -133,53 +133,38 @@ module State = struct
       o
   end
 
-  module type Facet = sig
-    type t
+  module Facet 
+   : sig
+    type ('input, 'output) t
 
-    include Jv.CONV with type t := t
+    val to_jv : ('input, 'output) t -> Jv.t
 
-    type input
-    type output
+    val of_ : ('input, 'output) t -> 'input -> Extension.t
 
-    val of_ : t -> input -> Extension.t
+    val from : ('input, 'output) t -> 'a Field.field -> Extension.t
 
-    val from : t -> 'a Field.field -> Extension.t
+    val from' : ('input, 'output) t -> 'a Field.field -> ('a -> 'input) -> Extension.t
 
-    val from' : t -> 'a Field.field -> ('a -> input) -> Extension.t
+    val create : 'input conv -> Jv.t -> ('input, 'output) t
+  end  
+  = struct
 
-  end
+    type ('input, 'output) t = 'input conv * Jv.t
 
-  module FacetMaker (I : sig
-    type t
+    let to_jv (_, v) = v
 
-    val to_jv : t -> Jv.t
-  end) : Facet with type input = I.t and type output = Jv.t = struct
-    type t = Jv.t
+    let create iconv v = (iconv, v)
+  
+    let of_ : ('i, 'o) t -> 'i -> Extension.t =
+      fun (iconv, jv) i -> Jv.call jv "of" [| iconv.to_jv i |] |> Extension.of_jv
 
-    include (Jv.Id : Jv.CONV with type t := t)
-
-    type input = I.t
-    type output = Jv.t
-
-    let of_ t i = Jv.call t "of" [| I.to_jv i |] |> Extension.of_jv
-
-    let from t f =
+    let from : ('i, 'o) t -> 'a Field.field -> Extension.t = fun (_, t) f ->
       Jv.call t "from" [| Field.to_jv f |] |> Extension.of_jv
 
-    let from' : t -> 'a Field.field -> ('a -> input) -> Extension.t = fun t f fn ->
-      let wrapped_fn v = fn v |> I.to_jv in
-      Jv.call t "from" [| Field.to_jv f; Jv.repr wrapped_fn |] |> Extension.of_jv
+    let from' : ('i, 'o) t -> 'a Field.field -> ('a -> 'i) -> Extension.t = fun (iconv, t) f fn ->
+      let wrapped_fn v = fn v |> iconv.to_jv in
+      Jv.call t "from" [| Field.to_jv f; Jv.callback ~arity:1 wrapped_fn |] |> Extension.of_jv
   end
-
-  type ('i, 'o) facet =
-    | Facet :
-        (module Facet with type input = 'i and type output = 'o and type t = 'a)
-        * 'a
-        -> ('i, 'o) facet
-
-
-
-
  
 
   let create ?(config = Jv.undefined) () =
@@ -192,18 +177,6 @@ module State = struct
   let field t f =
     let c = Field.conv f in
     Jv.call t "field" [| Field.to_jv f |] |> c.of_jv
-end
-
-(* Helper for function *)
-module Func (I : sig
-  type t
-
-  include Jv.CONV with type t := t
-end) =
-struct
-  type t = I.t -> unit
-
-  let to_jv f = Jv.repr f
 end
 
 module View = struct
@@ -236,10 +209,13 @@ module View = struct
 
   let dom t = Jv.get t "dom" |> Brr.El.of_jv
 
-  let update_listener _ : (Update.t -> unit, Jv.t) State.facet =
-    let module F = State.FacetMaker (Func (Update)) in
+  let update_listener () : (Update.t -> unit, Jv.t) State.Facet.t =
+    let jv_of_fn f =
+      Jv.callback ~arity:1 (fun u -> f (Update.of_jv u))
+    in
+    let iconv = { to_jv = jv_of_fn; of_jv = fun _ -> assert false } in
     let jv = Jv.get g "updateListener" in
-    Facet ((module F), F.of_jv jv)
+    State.Facet.create iconv jv
 
   let dispatch : t -> State.Transaction.t -> unit = fun t tr -> Jv.call t "dispatch" [| State.Transaction.to_jv tr |] |> ignore
 
@@ -272,10 +248,10 @@ end = struct
     o
 end
 
-let keymap : (Keymap.t, Jv.t) State.facet =
-  let module F = State.FacetMaker(Keymap) in
+let keymap : (Keymap.t, Jv.t) State.Facet.t =
+  let iconv = Keymap.{ of_jv; to_jv } in
   let jv = Jv.get Jv.global "__CM__keymap" in
-  State.Facet ((module F), F.of_jv jv)
+  State.Facet.create iconv jv
 
 
 

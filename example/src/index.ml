@@ -40,12 +40,11 @@ end = struct
   let of_jv _jv = assert false
 end
 
-module ShowPanel = Editor.State.FacetMaker(PanelConstructor)
 
-let showPanel : (PanelConstructor.t, Jv.t) Editor.State.facet =
-  let module F = ShowPanel in
+let showPanel : (PanelConstructor.t, Jv.t) Editor.State.Facet.t =
+  let iconv = PanelConstructor.{ Editor.of_jv; to_jv } in
   let jv = Jv.get Jv.global "__CM__showPanel" in
-  Facet ((module F), F.of_jv jv)
+  Editor.State.Facet.create iconv jv
 
 
 let update dom v =
@@ -71,9 +70,7 @@ let _ =
   in
 
   let provide field =
-    match showPanel with
-    | Facet ((module M), f) ->
-      M.from' f field (fun b ->
+      Editor.State.Facet.from' showPanel field (fun b ->
         Brr.Console.log [Jstr.v ("Here we are: b=" ^ string_of_bool b)];
         if b then Some panel_constructor else None
         )
@@ -92,13 +89,7 @@ let _ =
 
   let keymap = Editor.Keymap.create ~key:"F1" ~run () in
 
-  
-
-  let ext =
-    match Editor.keymap with
-    | Facet ((module M), f) ->
-      M.of_ f keymap
-  in
+  let ext = Editor.State.Facet.of_ Editor.keymap keymap in
 
   let _editor = init ~exts:[| ext;
    Editor.State.Field.extension help_state
