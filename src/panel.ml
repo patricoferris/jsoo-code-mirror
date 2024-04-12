@@ -13,7 +13,7 @@ let create ?mount ?update ?top ?pos dom =
          let u' jv = u (Editor.View.Update.of_jv jv) in
          u')
        update
-    |> Option.map Jv.repr);
+    |> Option.map (Jv.callback ~arity:1));
   Jv.Bool.set_if_some o "top" top;
   Jv.Int.set_if_some o "pos" pos;
   Jv.set o "dom" (El.to_jv dom);

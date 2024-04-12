@@ -1,12 +1,13 @@
 import { EditorView, basicSetup } from "codemirror"
-import { EditorState } from "@codemirror/state"
-import { hoverTooltip } from "@codemirror/view"
+import { EditorState, StateField, StateEffect } from "@codemirror/state"
+import { hoverTooltip, showPanel, keymap } from "@codemirror/view"
 import * as lint from "@codemirror/lint"
 import * as autocomplete from "@codemirror/autocomplete"
 import * as dark from "@codemirror/theme-one-dark"
 import * as language from "@codemirror/language"
 import { oCaml } from "@codemirror/legacy-modes/mode/mllike"
 import { markdown } from "@codemirror/lang-markdown"
+
 
 joo_global_object.__CM__view = EditorView;
 joo_global_object.__CM__state = EditorState;
@@ -18,3 +19,8 @@ joo_global_object.__CM__dark = dark;
 joo_global_object.__CM__stream_parser = language;
 joo_global_object.__CM__mllike = oCaml;
 joo_global_object.__CM__markdown = markdown;
+joo_global_object.__CM__showPanel = showPanel;
+joo_global_object.__CM__StateField = StateField;
+joo_global_object.__CM__StateEffect = StateEffect;
+joo_global_object.__CM__keymap = keymap;
+

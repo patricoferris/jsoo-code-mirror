@@ -3,6 +3,7 @@
  (modes js)
  (js_of_ocaml
   (javascript_files basic.js))
+ (promote (until-clean))
  (libraries code-mirror))
 
 (alias
