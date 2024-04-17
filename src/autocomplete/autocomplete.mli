@@ -51,7 +51,7 @@ module Context : sig
 
   include Jv.CONV with type t := t
 
-  val state : t -> State.t
+  val state : t -> State.EditorState.t
   (** The editor state that the completion happens in. *)
 
   val pos : t -> int

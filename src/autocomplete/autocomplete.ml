@@ -28,7 +28,7 @@ module Context = struct
 
   include (Jv.Id : Jv.CONV with type t := t)
 
-  let state t = Jv.get t "state" |> State.of_jv
+  let state t = Jv.get t "state" |> State.EditorState.of_jv
   let pos t = Jv.Int.get t "pos"
   let explicit t = Jv.Bool.get t "explicit"
 

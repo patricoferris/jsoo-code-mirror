@@ -1,7 +1,7 @@
-.PHONY: example node bundle fmt
-example:
+.PHONY: examples node bundle fmt
+examples:
 	dune build --ignore-promoted-rules
-	npx parcel _build/default/example/src/index.html
+	(cd examples; python serve.py)
 
 node:
 	npm install

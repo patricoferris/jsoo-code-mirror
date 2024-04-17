@@ -6,7 +6,7 @@ maintainer: ["pf341@patricoferris.com"]
 authors: ["Patrick Ferris"]
 license: "ISC"
 depends: [
-  "dune" {>= "2.8"}
+  "dune" {>= "3.0"}
   "brr"
   "js_of_ocaml"
   "odoc" {with-doc}

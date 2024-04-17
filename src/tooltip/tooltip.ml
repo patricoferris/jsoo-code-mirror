@@ -50,12 +50,13 @@ module Tooltip_view = struct
     Jv.Bool.set_if_some o "overlap" overlap;
     Jv.set_if_some o "mount"
     @@ Option.map
-         (fun mount -> Jv.repr (fun view -> mount (View.of_jv view)))
+         (fun mount -> Jv.repr (fun view -> mount (View.EditorView.of_jv view)))
          mount;
     Jv.set_if_some o "update"
     @@ Option.map
          (fun update ->
-           Jv.repr (fun view_up -> update (View.Update.of_jv view_up)))
+           Jv.repr (fun view_up ->
+               update (View.EditorView.Update.of_jv view_up)))
          update;
     Jv.set_if_some o "positioned" @@ Option.map Jv.repr positioned;
     o
@@ -74,7 +75,8 @@ module Tooltip = struct
     Jv.Int.set o "pos" pos;
     Jv.Int.set_if_some o "end" end_;
     Jv.set o "create"
-    @@ Jv.repr (fun view -> create (View.of_jv view) |> Tooltip_view.to_jv);
+    @@ Jv.repr (fun view ->
+           create (View.EditorView.of_jv view) |> Tooltip_view.to_jv);
     Jv.Bool.set_if_some o "above" above;
     Jv.Bool.set_if_some o "strictSide" strict_side;
     Jv.Bool.set_if_some o "arrow" arrow;
@@ -94,7 +96,9 @@ let hover_tooltip ?config source =
   let source =
     Jv.repr @@ fun view pos side ->
     let fut =
-      source ~view:(View.of_jv view) ~pos:(Jv.to_int pos) ~side:(Jv.to_int side)
+      source
+        ~view:(View.EditorView.of_jv view)
+        ~pos:(Jv.to_int pos) ~side:(Jv.to_int side)
     in
     let fut = Fut.map (fun v -> Ok v) fut in
     Fut.to_promise fut ~ok:(fun t ->

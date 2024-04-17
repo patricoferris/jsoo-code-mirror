@@ -1,0 +1,9 @@
+(executable
+ (name index)
+ (modes js)
+ (promote (until-clean))
+ (libraries code-mirror))
+
+(alias
+ (name default)
+ (deps index.html))
