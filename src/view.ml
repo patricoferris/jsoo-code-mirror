@@ -114,7 +114,9 @@ module Panel = struct
           Brr.Console.log [ Jstr.v "Got a callback!" ];
           let callback v =
             let v = EditorView.of_jv v in
-            to_jv (x v)
+            let result = x v in
+            (* Brr.Console.log [ result ]; *)
+            to_jv result
           in
           Jv.callback ~arity:1 callback
       | None ->

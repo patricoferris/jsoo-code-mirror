@@ -5,9 +5,7 @@ let basic_setup = Jv.get Jv.global "__CM__basic_setup" |> Extension.of_jv
 
 let init ?doc ?(exts = []) () =
   let config =
-    State.EditorStateConfig.create ?doc
-      ~extensions:( basic_setup :: exts )
-      ()
+    State.EditorStateConfig.create ?doc ~extensions:(basic_setup :: exts) ()
   in
   let state = State.EditorState.create ~config () in
   let config =
@@ -60,7 +58,5 @@ let _ =
 
   let ext = State.Facet.of_ Keymap.keymap keymap in
 
-  let _editor =
-    init ~exts:[ ext; State.StateField.extension help_state ] ()
-  in
+  let _editor = init ~exts:[ ext; State.StateField.extension help_state ] () in
   ()

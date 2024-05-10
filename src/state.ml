@@ -3,7 +3,13 @@ include Types.State
 module EditorStateConfig = struct
   include EditorStateConfig
 
-  let create : ?doc:string -> ?selection:EditorSelection.t -> ?extensions:Extension.t list -> unit -> t = fun ?doc ?selection ?extensions () ->
+  let create :
+      ?doc:string ->
+      ?selection:EditorSelection.t ->
+      ?extensions:Extension.t list ->
+      unit ->
+      t =
+   fun ?doc ?selection ?extensions () ->
     let o = Jv.obj [||] in
     Jv.Jstr.set_if_some o "doc" (Option.map Jstr.of_string doc);
     Jv.set_if_some o "selection" (Option.map EditorSelection.to_jv selection);
@@ -36,21 +42,16 @@ module SelectionRange : sig
   include Jv.CONV with type t := t
 
   val from : t -> int
-
   val to_ : t -> int
-
   val anchor : t -> int
-
   val head : t -> int
-
   val empty : t -> bool
-
   val assoc : t -> int
-
 end = struct
   type t = Jv.t
 
   include (Jv.Id : Jv.CONV with type t := t)
+
   let from : t -> int = fun t -> Jv.Int.get t "from"
   let to_ : t -> int = fun t -> Jv.Int.get t "to"
   let anchor : t -> int = fun t -> Jv.Int.get t "anchor"
@@ -66,19 +67,42 @@ module EditorSelection = struct
 
   let create : ranges:SelectionRange.t list -> ?main_index:int -> unit -> t =
    fun ~ranges ?(main_index = 0) () ->
-    Jv.call (Lazy.force editor_selection) "create" (Array.of_list ((List.map SelectionRange.to_jv ranges) @ [ Jv.of_int main_index ])) |> of_jv
+    Jv.call
+      (Lazy.force editor_selection)
+      "create"
+      (Array.of_list
+         (List.map SelectionRange.to_jv ranges @ [ Jv.of_int main_index ]))
+    |> of_jv
 
-  let cursor : pos:int -> ?assoc:int -> ?bidiLevel:int -> ?goalColumn:int -> unit -> SelectionRange.t = fun
-    ~pos ?(assoc=0) ?bidiLevel ?goalColumn () ->
-      let opt x = match x with | Some x -> Jv.of_int x | None -> Jv.undefined in
-      Jv.call (Lazy.force editor_selection) "cursor"
-        [| Jv.of_int pos; Jv.of_int assoc; opt bidiLevel; opt goalColumn |] |> SelectionRange.of_jv
+  let cursor :
+      pos:int ->
+      ?assoc:int ->
+      ?bidiLevel:int ->
+      ?goalColumn:int ->
+      unit ->
+      SelectionRange.t =
+   fun ~pos ?(assoc = 0) ?bidiLevel ?goalColumn () ->
+    let opt x = match x with Some x -> Jv.of_int x | None -> Jv.undefined in
+    Jv.call
+      (Lazy.force editor_selection)
+      "cursor"
+      [| Jv.of_int pos; Jv.of_int assoc; opt bidiLevel; opt goalColumn |]
+    |> SelectionRange.of_jv
 
-  let range : anchor:int -> head:int -> ?goalColumn:int -> ?bidiLevel:int -> unit -> SelectionRange.t = fun
-    ~anchor ~head ?goalColumn ?bidiLevel () ->
-      let opt x = match x with | Some x -> Jv.of_int x | None -> Jv.undefined in
-      Jv.call (Lazy.force editor_selection) "range"
-        [| Jv.of_int anchor; Jv.of_int head; opt goalColumn; opt bidiLevel |] |> SelectionRange.of_jv
+  let range :
+      anchor:int ->
+      head:int ->
+      ?goalColumn:int ->
+      ?bidiLevel:int ->
+      unit ->
+      SelectionRange.t =
+   fun ~anchor ~head ?goalColumn ?bidiLevel () ->
+    let opt x = match x with Some x -> Jv.of_int x | None -> Jv.undefined in
+    Jv.call
+      (Lazy.force editor_selection)
+      "range"
+      [| Jv.of_int anchor; Jv.of_int head; opt goalColumn; opt bidiLevel |]
+    |> SelectionRange.of_jv
 end
 
 module Text = struct
@@ -86,6 +110,9 @@ module Text = struct
 
   let length (t : t) = Jv.Int.get (to_jv t) "length"
   let line n (t : t) = Jv.call (to_jv t) "line" [| Jv.of_int n |]
+
+  let to_string (t : t) =
+    Jv.call (to_jv t) "toString" [||] |> Jv.to_jstr |> Jstr.to_string
 
   let to_jstr_array (t : t) =
     Jv.call (to_jv t) "toJSON" [||] |> Jv.to_jstr_array
@@ -158,6 +185,12 @@ module StateField = struct
     Jv.set o "create" (Jv.callback ~arity:1 create_wrapper);
     let jv = Jv.call (Lazy.force state_field) "define" [| o |] in
     StateField.of_jv { Types.to_jv = v_to_jv; of_jv = v_of_jv } jv
+
+  let init : 'a t -> (EditorState.t -> 'a) -> Extension.t =
+   fun f init ->
+    let init_wrapper st = init (EditorState.of_jv st) |> (conv f).to_jv in
+    let jv = Jv.call (to_jv f) "init" [| Jv.callback ~arity:1 init_wrapper |] in
+    Extension.of_jv jv
 end
 
 module Facet = struct
@@ -173,7 +206,7 @@ module Facet = struct
 
   let from' : ('i, 'o) t -> 'a StateField.t -> ('a -> 'i) -> Extension.t =
    fun v f fn ->
-    let wrapped_fn x = fn x |> (to_conv v).to_jv in
+    let wrapped_fn x = fn ((StateField.conv f).of_jv x) |> (to_conv v).to_jv in
     Jv.call (to_jv v) "from"
       [| StateField.to_jv f; Jv.callback ~arity:1 wrapped_fn |]
     |> Extension.of_jv
@@ -182,30 +215,31 @@ end
 module Transaction = struct
   include Transaction
 
-  type selection = Short of { anchor: int; head: int option } | SelectionRange of SelectionRange.t
+  type selection =
+    | Short of { anchor : int; head : int option }
+    | SelectionRange of SelectionRange.t
 
-  type change_spec = { from : int; to_: int option; insert : string option }
+  type change_spec = { from : int; to_ : int option; insert : string option }
 
   let change_spec_to_jv = function
     | { from; to_; insert } ->
-      let o = Jv.obj [||] in
-      Jv.set o "from" (Jv.of_int from);
-      Jv.set_if_some o "to" (Option.map Jv.of_int to_);
-      Jv.set_if_some o "insert" (Option.map Jv.of_string insert);
-      o
+        let o = Jv.obj [||] in
+        Jv.set o "from" (Jv.of_int from);
+        Jv.set_if_some o "to" (Option.map Jv.of_int to_);
+        Jv.set_if_some o "insert" (Option.map Jv.of_string insert);
+        o
 
   let selection_to_jv = function
     | Short { anchor; head } ->
-      let o = Jv.obj [||] in
-      Jv.set o "anchor" (Jv.of_int anchor);
-      Jv.set_if_some o "head" (Option.map Jv.of_int head);
-      o
+        let o = Jv.obj [||] in
+        Jv.set o "anchor" (Jv.of_int anchor);
+        Jv.set_if_some o "head" (Option.map Jv.of_int head);
+        o
     | SelectionRange r -> SelectionRange.to_jv r
 
   let effects : t -> StateEffect.t list =
    fun v -> Jv.get (to_jv v) "effects" |> Jv.to_list StateEffect.of_jv
 
-  
   let create ?(effects = []) ?selection ?changes () =
     let o = Jv.obj [||] in
     Jv.set_if_some o "selection" (Option.map selection_to_jv selection);
