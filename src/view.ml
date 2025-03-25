@@ -69,6 +69,24 @@ module EditorView = struct
 
   let line_wrapping () =
     Jv.get (Lazy.force view) "lineWrapping" |> Extension.of_jv
+
+  type theme =
+      TO of (string * theme) list
+    | TV of string
+  let theme ?dark th  =
+    let theme = Jv.get (Lazy.force view) "theme" in
+    let rec to_obj theme =
+      match theme with
+      | TV s -> Jstr.of_string s |> Jv.of_jstr
+      | TO vs ->
+        let o = Jv.obj [||] in
+        List.iter (fun (k,v) ->
+          Jv.set o k (to_obj v)) vs;
+        o
+    in
+    let opts = Jv.obj [||] in
+    Jv.Bool.set_if_some opts "dark" dark;
+    Jv.apply theme [| to_obj th; opts |] |> Extension.of_jv
 end
 
 module Panel = struct

@@ -41,6 +41,13 @@ module EditorView : sig
   val update_listener : unit -> (Update.t -> unit, Jv.t) State.Facet.t
   val line_wrapping : unit -> Extension.t
   val dispatch : t -> State.Transaction.t -> unit
+
+  type theme =
+    TO of (string * theme) list
+  | TV of string
+
+  val theme : ?dark:bool -> theme -> Extension.t
+
 end
 
 module Panel : sig
