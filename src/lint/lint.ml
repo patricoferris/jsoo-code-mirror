@@ -7,14 +7,17 @@ module Action = struct
 
   let create ~name f =
     let f' view from to_ =
+      Brr.Console.log [Jstr.v "Action callback"];
       let view = View.EditorView.of_jv view in
       let from = Jv.to_int from in
       let to_ = Jv.to_int to_ in
-      f ~view ~from ~to_
+      let result = f ~view ~from ~to_ in
+      Brr.Console.log [Jstr.v "Action callback finished"];
+      result
     in
     let o = Jv.obj [||] in
     Jv.Jstr.set o "name" (Jstr.v name);
-    Jv.set o "apply" (Jv.repr f');
+    Jv.set o "apply" (Jv.callback ~arity:1 f');
     o
 
   include (Jv.Id : Jv.CONV with type t := t)
@@ -60,17 +63,19 @@ module Diagnostic = struct
 end
 
 let create ?delay (source : View.EditorView.t -> Diagnostic.t array Fut.t) =
+  Brr.Console.log [Jstr.v "Creating linter"];
   let o =
     match delay with
     | None -> Jv.obj [||]
     | Some d -> Jv.obj [| ("delay", Jv.of_int d) |]
   in
   let source' view =
+    Brr.Console.log [Jstr.v "Source callback"];
     let fut =
       Fut.map (Jv.of_array Diagnostic.to_jv)
       @@ source (View.EditorView.of_jv view)
     in
     Fut.to_promise ~ok:Fun.id (Fut.map Result.ok fut)
   in
-  let ext = Jv.call lint "linter" [| Jv.repr source'; o |] in
+  let ext = Jv.call lint "linter" [| Jv.callback ~arity:1 source'; o |] in
   Code_mirror.Extension.of_jv ext

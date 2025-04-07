@@ -70,7 +70,7 @@ module Source = struct
       Fut.to_promise fut ~ok:(fun t ->
           Option.value ~default:Jv.null (Option.map Result.to_jv t))
     in
-    Jv.repr f
+    Jv.callback ~arity:1 f
 
   let from_list (l : Completion.t list) =
     Jv.call autocomplete "completeFromList" [| Jv.of_jv_list l |] |> of_jv
