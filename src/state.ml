@@ -34,6 +34,23 @@ module EditorState = struct
   let field (t : t) (f : 'a StateField.t) =
     let c = StateField.conv f in
     Jv.call (to_jv t) "field" [| StateField.to_jv f |] |> c.of_jv
+
+  let selection (v : t) = Jv.get (to_jv v) "selection" |> EditorSelection.of_jv
+end
+
+module ChangeDesc : sig
+  type t
+
+  include Jv.CONV with type t := t
+
+  val mapPos : t -> int -> int
+end = struct
+  type t = Jv.t
+
+  include (Jv.Id : Jv.CONV with type t := t)
+
+  let mapPos : t -> int -> int =
+   fun t pos -> Jv.call (to_jv t) "mapPos" [| Jv.of_int pos |] |> Jv.to_int
 end
 
 module SelectionRange : sig
@@ -103,6 +120,44 @@ module EditorSelection = struct
       "range"
       [| Jv.of_int anchor; Jv.of_int head; opt goalColumn; opt bidiLevel |]
     |> SelectionRange.of_jv
+
+  let ranges (v : t) =
+    Jv.get (to_jv v) "ranges" |> Jv.to_list SelectionRange.of_jv
+end
+
+module RangeSet : sig
+  type t
+
+  include Jv.CONV with type t := t
+
+  type 'a ty = 'a Types.conv * t
+
+  val ty_to_jv : 'a ty -> Jv.t
+  val conv_of_ty : 'a ty -> 'a Types.conv
+  val ty_of_t : 'a Types.conv -> t -> 'a ty
+  val map : 'a ty -> ChangeDesc.t -> 'a ty
+  val update : ?add:'a ty list -> ?sort:bool -> 'a ty -> 'a ty
+end = struct
+  type t = Jv.t
+
+  include (Jv.Id : Jv.CONV with type t := t)
+
+  type 'a ty = 'a Types.conv * Jv.t
+
+  let ty_to_jv : 'a ty -> Jv.t = fun (_, t) -> t
+  let conv_of_ty (conv, _) = conv
+  let ty_of_t conv jv = (conv, jv)
+
+  let map : 'a ty -> ChangeDesc.t -> 'a ty =
+   fun (conv, v) changes ->
+    (conv, Jv.call (to_jv v) "map" [| ChangeDesc.to_jv changes |] |> of_jv)
+
+  let update ?add ?sort v : 'a ty =
+    let o = Jv.obj [||] in
+    Jv.set_if_some o "add" (Option.map (fun s -> Jv.of_list ty_to_jv s) add);
+    Jv.set_if_some o "sort" (Option.map Jv.of_bool sort);
+    let v' = Jv.call (to_jv (ty_to_jv v)) "update" [| o |] |> of_jv in
+    ty_of_t (conv_of_ty v) v'
 end
 
 module Text = struct
@@ -128,15 +183,47 @@ module Line = struct
   let length t = Jv.Int.get t "length"
 end
 
-module StateEffect = struct
+module StateEffect : sig
+  type t
+  type 'a ty
+
+  include Jv.CONV with type t := t
+
+  val ty_to_jv : 'a ty -> Jv.t
+  val conv_of_ty : 'a ty -> 'a Types.conv
+  val define : ('a -> Jv.t) -> (Jv.t -> 'a) -> 'a ty
+
+  val define_ :
+    ('a -> Jv.t) ->
+    (Jv.t -> 'a) ->
+    map:('a -> ChangeDesc.t -> 'a option) ->
+    'a ty
+
+  val is : t -> 'a ty -> bool
+  val value : t -> 'a ty -> 'a option
+  val of_ : 'a ty -> 'a -> t
+  val of_l : 'a ty -> 'a list -> t
+  val append_config : unit -> Extension.t ty
+end = struct
   include StateEffect
 
   let state_effect = lazy (Jv.get Jv.global "__CM__StateEffect")
 
   let define : type a. (a -> Jv.t) -> (Jv.t -> a) -> a ty =
-   fun to_jv of_jv ->
-    let jv = Jv.call (Lazy.force state_effect) "define" [||] in
-    ty_of_jv { Types.to_jv; of_jv } jv
+   fun a_to_jv a_of_jv ->
+    let v' = Jv.call (Lazy.force state_effect) "define" [||] in
+    ty_of_jv { Types.to_jv = a_to_jv; of_jv = a_of_jv } v'
+
+  let define_ : type a.
+      (a -> Jv.t) -> (Jv.t -> a) -> map:(a -> ChangeDesc.t -> a option) -> a ty
+      =
+   fun a_to_jv a_of_jv ~map ->
+    let map v changes =
+      match map v changes with Some v -> a_to_jv v | None -> Jv.undefined
+    in
+    let o = Jv.obj [| ("map", Jv.callback ~arity:2 map) |] in
+    let v' = Jv.call (Lazy.force state_effect) "define" [| o |] in
+    ty_of_jv { Types.to_jv = a_to_jv; of_jv = a_of_jv } v'
 
   let is : t -> 'a ty -> bool =
    fun v ty -> Jv.call (to_jv v) "is" [| ty_to_jv ty |] |> Jv.to_bool
@@ -150,6 +237,14 @@ module StateEffect = struct
   let of_ ty v =
     let conv = conv_of_ty ty in
     Jv.call (ty_to_jv ty) "of" [| conv.to_jv v |] |> of_jv
+
+  let of_l ty vs =
+    let conv = conv_of_ty ty in
+    Jv.call (ty_to_jv ty) "of" [| Jv.of_list conv.to_jv vs |] |> of_jv
+
+  let append_config () : Extension.t StateEffect.ty =
+    Jv.get (Lazy.force state_effect) "appendConfig"
+    |> ty_of_jv Types.{ of_jv = Extension.of_jv; to_jv = Extension.to_jv }
 end
 
 module StateField = struct
@@ -157,8 +252,7 @@ module StateField = struct
 
   let state_field = lazy (Jv.get Jv.global "__CM__StateField")
 
-  let define :
-      type a.
+  let define : type a.
       ?compare:(a -> a -> bool) ->
       ?provide:(a t -> Extension.t) ->
       (a -> Jv.t) ->
@@ -239,6 +333,9 @@ module Transaction = struct
 
   let effects : t -> StateEffect.t list =
    fun v -> Jv.get (to_jv v) "effects" |> Jv.to_list StateEffect.of_jv
+
+  let changes : t -> ChangeDesc.t =
+   fun v -> Jv.get (to_jv v) "changes" |> ChangeDesc.of_jv
 
   let create ?(effects = []) ?selection ?changes () =
     let o = Jv.obj [||] in

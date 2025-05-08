@@ -40,7 +40,8 @@ module Tooltip_view = struct
     let get_coords =
       Option.map
         (fun get_coords ->
-          Jv.callback ~arity:1 (fun pos -> get_coords (Jv.to_int pos) |> coords_to_jv))
+          Jv.callback ~arity:1 (fun pos ->
+              get_coords (Jv.to_int pos) |> coords_to_jv))
         get_coords
     in
     let o = Jv.obj [||] in
@@ -50,7 +51,8 @@ module Tooltip_view = struct
     Jv.Bool.set_if_some o "overlap" overlap;
     Jv.set_if_some o "mount"
     @@ Option.map
-         (fun mount -> Jv.callback ~arity:1 (fun view -> mount (View.EditorView.of_jv view)))
+         (fun mount ->
+           Jv.callback ~arity:1 (fun view -> mount (View.EditorView.of_jv view)))
          mount;
     Jv.set_if_some o "update"
     @@ Option.map
@@ -58,7 +60,8 @@ module Tooltip_view = struct
            Jv.callback ~arity:1 (fun view_up ->
                update (View.EditorView.Update.of_jv view_up)))
          update;
-    Jv.set_if_some o "positioned" @@ Option.map (Jv.callback ~arity:1) positioned;
+    Jv.set_if_some o "positioned"
+    @@ Option.map (Jv.callback ~arity:1) positioned;
     o
 end
 

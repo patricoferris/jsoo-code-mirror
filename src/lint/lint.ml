@@ -7,12 +7,12 @@ module Action = struct
 
   let create ~name f =
     let f' view from to_ =
-      Brr.Console.log [Jstr.v "Action callback"];
+      Brr.Console.log [ Jstr.v "Action callback" ];
       let view = View.EditorView.of_jv view in
       let from = Jv.to_int from in
       let to_ = Jv.to_int to_ in
       let result = f ~view ~from ~to_ in
-      Brr.Console.log [Jstr.v "Action callback finished"];
+      Brr.Console.log [ Jstr.v "Action callback finished" ];
       result
     in
     let o = Jv.obj [||] in
@@ -63,14 +63,14 @@ module Diagnostic = struct
 end
 
 let create ?delay (source : View.EditorView.t -> Diagnostic.t array Fut.t) =
-  Brr.Console.log [Jstr.v "Creating linter"];
+  Brr.Console.log [ Jstr.v "Creating linter" ];
   let o =
     match delay with
     | None -> Jv.obj [||]
     | Some d -> Jv.obj [| ("delay", Jv.of_int d) |]
   in
   let source' view =
-    Brr.Console.log [Jstr.v "Source callback"];
+    Brr.Console.log [ Jstr.v "Source callback" ];
     let fut =
       Fut.map (Jv.of_array Diagnostic.to_jv)
       @@ source (View.EditorView.of_jv view)

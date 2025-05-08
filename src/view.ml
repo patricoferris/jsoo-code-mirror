@@ -34,6 +34,54 @@ end = struct
   let undefined : t = Jv.undefined
 end
 
+module Decoration : sig
+  type t
+
+  include Jv.CONV with type t := t
+
+  val mark :
+    ?inclusive:bool ->
+    ?inclusive_start:bool ->
+    ?inclusive_end:bool ->
+    ?className:string ->
+    ?tagName:string ->
+    unit ->
+    t
+
+  val none : t State.RangeSet.ty
+  val range : t -> from:int -> ?to_:int -> unit -> t State.RangeSet.ty
+end = struct
+  type t = Jv.t
+
+  include (Jv.Id : Jv.CONV with type t := t)
+
+  let decoration = lazy (Jv.get Jv.global "__CM__Decoration")
+
+  let mark ?inclusive ?inclusive_start ?inclusive_end ?className ?tagName () =
+    let o = Jv.obj [||] in
+    Jv.Bool.set_if_some o "inclusive" inclusive;
+    Jv.Bool.set_if_some o "inclusiveStart" inclusive_start;
+    Jv.Bool.set_if_some o "inclusiveEnd" inclusive_end;
+    Jv.set_if_some o "className" (Option.map Jv.of_string className);
+    Jv.set_if_some o "tagName" (Option.map Jv.of_string tagName);
+    Jv.call (Lazy.force decoration) "mark" [| o |] |> of_jv
+
+  let none =
+    let v = Jv.get (Lazy.force decoration) "none" |> State.RangeSet.of_jv in
+    let conv = Types.{ to_jv; of_jv } in
+    State.RangeSet.ty_of_t conv v
+
+  let range v ~from ?to_ () : t State.RangeSet.ty =
+    let args =
+      match to_ with
+      | None -> [| Jv.of_int from |]
+      | Some to_ -> [| Jv.of_int from; Jv.of_int to_ |]
+    in
+    let v = Jv.call v "range" args |> State.RangeSet.of_jv in
+    let conv = Types.{ to_jv; of_jv } in
+    State.RangeSet.ty_of_t conv v
+end
+
 module EditorView = struct
   type t = Jv.t
 
@@ -70,23 +118,33 @@ module EditorView = struct
   let line_wrapping () =
     Jv.get (Lazy.force view) "lineWrapping" |> Extension.of_jv
 
-  type theme =
-      TO of (string * theme) list
-    | TV of string
-  let theme ?dark th  =
+  type theme = TO of (string * theme) list | TV of string
+
+  let theme ?dark th =
     let theme = Jv.get (Lazy.force view) "theme" in
     let rec to_obj theme =
       match theme with
       | TV s -> Jstr.of_string s |> Jv.of_jstr
       | TO vs ->
-        let o = Jv.obj [||] in
-        List.iter (fun (k,v) ->
-          Jv.set o k (to_obj v)) vs;
-        o
+          let o = Jv.obj [||] in
+          List.iter (fun (k, v) -> Jv.set o k (to_obj v)) vs;
+          o
     in
     let opts = Jv.obj [||] in
     Jv.Bool.set_if_some opts "dark" dark;
     Jv.apply theme [| to_obj th; opts |] |> Extension.of_jv
+
+  let base_theme th =
+    let theme = Jv.get (Lazy.force view) "baseTheme" in
+    let rec to_obj theme =
+      match theme with
+      | TV s -> Jstr.of_string s |> Jv.of_jstr
+      | TO vs ->
+          let o = Jv.obj [||] in
+          List.iter (fun (k, v) -> Jv.set o k (to_obj v)) vs;
+          o
+    in
+    Jv.apply theme [| to_obj th |] |> Extension.of_jv
 end
 
 module Panel = struct

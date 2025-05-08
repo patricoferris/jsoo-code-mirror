@@ -15,6 +15,24 @@ module EditorViewConfig : sig
   val undefined : t
 end
 
+module Decoration : sig
+  type t
+
+  include Jv.CONV with type t := t
+
+  val mark :
+    ?inclusive:bool ->
+    ?inclusive_start:bool ->
+    ?inclusive_end:bool ->
+    ?className:string ->
+    ?tagName:string ->
+    unit ->
+    t
+
+  val none : t State.RangeSet.ty
+  val range : t -> from:int -> ?to_:int -> unit -> t State.RangeSet.ty
+end
+
 module EditorView : sig
   type t
   (** Editor view *)
@@ -42,12 +60,10 @@ module EditorView : sig
   val line_wrapping : unit -> Extension.t
   val dispatch : t -> State.Transaction.t -> unit
 
-  type theme =
-    TO of (string * theme) list
-  | TV of string
+  type theme = TO of (string * theme) list | TV of string
 
   val theme : ?dark:bool -> theme -> Extension.t
-
+  val base_theme : theme -> Extension.t
 end
 
 module Panel : sig

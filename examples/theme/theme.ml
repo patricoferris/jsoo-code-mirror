@@ -6,7 +6,7 @@ let dracula = Jv.get Jv.global "__CM__theme_dracula" |> Extension.of_jv
 
 let init ?doc () =
   let config =
-    State.EditorStateConfig.create ?doc ~extensions:[dracula; basic_setup] ()
+    State.EditorStateConfig.create ?doc ~extensions:[ dracula; basic_setup ] ()
   in
   let state = State.EditorState.create ~config () in
   let config =
@@ -16,7 +16,5 @@ let init ?doc () =
   (state, view)
 
 let _ =
-  let _ =
-    init ~doc:"Hello, world2! Some test\nSome more text\n" ()
-  in
+  let _ = init ~doc:"Hello, world2! Some test\nSome more text\n" () in
   ()
