@@ -20,15 +20,14 @@ let add_underline =
   in
   State.StateEffect.define_ Highlight.to_jv Highlight.of_jv ~map
 
-let underline_mark = View.Decoration.mark ~className:"underline" ()
+let underline_mark = View.Decoration.mark ~className:"cm-underline" ()
 
 let underline_field =
   let to_jv v = State.RangeSet.ty_to_jv v in
   let of_jv jv =
-    let v = State.RangeSet.of_jv jv in
-    State.RangeSet.ty_of_t
+    State.RangeSet.ty_of_jv
       { Types.to_jv = View.Decoration.to_jv; of_jv = View.Decoration.of_jv }
-      v
+      jv
   in
   State.StateField.define to_jv of_jv
     ~create:(fun _ -> View.Decoration.none)
@@ -37,20 +36,30 @@ let underline_field =
       let effects = State.Transaction.effects tr in
       List.fold_right
         (fun e cur ->
+          Brr.Console.log [ Jv.of_string "underline_field update fn" ];
           if State.StateEffect.is e add_underline then
             match State.StateEffect.value e add_underline with
             | Some { from; to_ } ->
+                Brr.Console.log
+                  [
+                    Jv.of_string
+                      (Printf.sprintf "adding underline range: %d to %d" from
+                         to_);
+                  ];
                 let add = View.Decoration.range underline_mark ~from ~to_ () in
-                let _ = State.RangeSet.update ~add:[ add ] cur in
-                cur
+                State.RangeSet.update ~add:[ add ] cur
             | None -> cur
           else cur)
         effects v)
+    ~provide:(State.Facet.from View.EditorView.decorations)
 
 let underline_theme =
   View.EditorView.(
     base_theme
-      (TO [ ("underline", TO [ ("textDecoration", TV "underline 3px red") ]) ]))
+      (TO
+         [
+           (".cm-underline", TO [ ("textDecoration", TV "underline 3px red") ]);
+         ]))
 
 let underline_selection view =
   let selection = State.EditorState.selection (View.EditorView.state view) in
@@ -79,6 +88,7 @@ let underline_selection view =
               (State.StateEffect.append_config ())
               [ State.StateField.extension underline_field; underline_theme ]
           in
+          Console.log [ Jv.of_string "adding underline fields and theme" ];
           x :: effects
       in
       View.EditorView.dispatch view (State.Transaction.create ~effects ());
@@ -101,14 +111,15 @@ let init ?doc ?(exts = []) () =
   (state, view)
 
 let _ =
-  let _state, view =
+  Console.log [ Jv.of_string "init_underline" ];
+  let _state, _view =
     init ~doc:"Hello, world2! Some test\nSome more text\n" ~exts:[] ()
   in
-  let selection = State.Transaction.Short { anchor = 10; head = Some 20 } in
-  let transaction =
-    State.Transaction.create ~selection
-      ~changes:{ from = 10; insert = Some "*"; to_ = None }
+  (* let transaction =
+    State.Transaction.create 
+      ~effects:[State.StateEffect.of_ add_underline { from = 10; to_ = 20 }]
       ()
   in
   View.EditorView.dispatch view transaction;
+  () *)
   ()

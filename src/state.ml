@@ -125,6 +125,34 @@ module EditorSelection = struct
     Jv.get (to_jv v) "ranges" |> Jv.to_list SelectionRange.of_jv
 end
 
+module Range : sig
+  type t
+
+  include Jv.CONV with type t := t
+
+  type 'a ty = 'a Types.conv * t
+
+  val ty_to_jv : 'a ty -> Jv.t
+  val conv_of_ty : 'a ty -> 'a Types.conv
+  val ty_of_jv : 'a Types.conv -> Jv.t -> 'a ty
+  val jv_of_ty : 'a ty -> Jv.t
+  val value : 'a ty -> 'a
+end = struct
+  type t = Jv.t
+
+  include (Jv.Id : Jv.CONV with type t := t)
+
+  type 'a ty = 'a Types.conv * t
+
+  let ty_to_jv : 'a ty -> Jv.t = fun (_, t) -> t
+  let conv_of_ty (conv, _) = conv
+  let jv_of_ty (_conv, v) = v
+  let ty_of_jv conv jv = (conv, jv)
+
+  let value : 'a ty -> 'a =
+   fun (conv, v) -> Jv.get (to_jv v) "value" |> conv.of_jv
+end
+
 module RangeSet : sig
   type t
 
@@ -134,9 +162,11 @@ module RangeSet : sig
 
   val ty_to_jv : 'a ty -> Jv.t
   val conv_of_ty : 'a ty -> 'a Types.conv
-  val ty_of_t : 'a Types.conv -> t -> 'a ty
+  val ty_of_jv : 'a Types.conv -> Jv.t -> 'a ty
+  val jv_of_ty : 'a ty -> Jv.t
   val map : 'a ty -> ChangeDesc.t -> 'a ty
-  val update : ?add:'a ty list -> ?sort:bool -> 'a ty -> 'a ty
+  val update : ?add:'a Range.ty list -> ?sort:bool -> 'a ty -> 'a ty
+  val of_ : 'a Range.ty list -> 'a ty option
 end = struct
   type t = Jv.t
 
@@ -146,18 +176,33 @@ end = struct
 
   let ty_to_jv : 'a ty -> Jv.t = fun (_, t) -> t
   let conv_of_ty (conv, _) = conv
-  let ty_of_t conv jv = (conv, jv)
+  let jv_of_ty (_conv, v) = v
+  let ty_of_jv conv jv = (conv, jv)
+  let rangeset = lazy (Jv.get Jv.global "__CM__RangeSet")
 
   let map : 'a ty -> ChangeDesc.t -> 'a ty =
    fun (conv, v) changes ->
     (conv, Jv.call (to_jv v) "map" [| ChangeDesc.to_jv changes |] |> of_jv)
 
-  let update ?add ?sort v : 'a ty =
+  let update ?(add = []) ?sort v : 'a ty =
     let o = Jv.obj [||] in
-    Jv.set_if_some o "add" (Option.map (fun s -> Jv.of_list ty_to_jv s) add);
+    (match add with
+    | [] -> ()
+    | _ -> Jv.set o "add" (Jv.of_list Range.ty_to_jv add));
     Jv.set_if_some o "sort" (Option.map Jv.of_bool sort);
-    let v' = Jv.call (to_jv (ty_to_jv v)) "update" [| o |] |> of_jv in
-    ty_of_t (conv_of_ty v) v'
+    let v' = Jv.call (to_jv (ty_to_jv v)) "update" [| o |] in
+    ty_of_jv (conv_of_ty v) v'
+
+  let of_ : 'a Range.ty list -> 'a ty option =
+   fun vs ->
+    match vs with
+    | [] -> None
+    | x :: _ ->
+        let conv = conv_of_ty x in
+        let v =
+          Jv.call (Lazy.force rangeset) "of" [| Jv.of_list Range.jv_of_ty vs |]
+        in
+        Some (ty_of_jv conv v)
 end
 
 module Text = struct

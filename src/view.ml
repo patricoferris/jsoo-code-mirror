@@ -49,7 +49,7 @@ module Decoration : sig
     t
 
   val none : t State.RangeSet.ty
-  val range : t -> from:int -> ?to_:int -> unit -> t State.RangeSet.ty
+  val range : t -> from:int -> ?to_:int -> unit -> t State.Range.ty
 end = struct
   type t = Jv.t
 
@@ -62,24 +62,25 @@ end = struct
     Jv.Bool.set_if_some o "inclusive" inclusive;
     Jv.Bool.set_if_some o "inclusiveStart" inclusive_start;
     Jv.Bool.set_if_some o "inclusiveEnd" inclusive_end;
-    Jv.set_if_some o "className" (Option.map Jv.of_string className);
+    Jv.set_if_some o "class" (Option.map Jv.of_string className);
     Jv.set_if_some o "tagName" (Option.map Jv.of_string tagName);
+    Brr.Console.log [ Jstr.v "Marking"; o ];
     Jv.call (Lazy.force decoration) "mark" [| o |] |> of_jv
 
   let none =
-    let v = Jv.get (Lazy.force decoration) "none" |> State.RangeSet.of_jv in
+    let v = Jv.get (Lazy.force decoration) "none" in
     let conv = Types.{ to_jv; of_jv } in
-    State.RangeSet.ty_of_t conv v
+    State.RangeSet.ty_of_jv conv v
 
-  let range v ~from ?to_ () : t State.RangeSet.ty =
+  let range v ~from ?to_ () : t State.Range.ty =
     let args =
       match to_ with
       | None -> [| Jv.of_int from |]
       | Some to_ -> [| Jv.of_int from; Jv.of_int to_ |]
     in
-    let v = Jv.call v "range" args |> State.RangeSet.of_jv in
+    let v = Jv.call v "range" args in
     let conv = Types.{ to_jv; of_jv } in
-    State.RangeSet.ty_of_t conv v
+    State.Range.ty_of_jv conv v
 end
 
 module EditorView = struct
@@ -118,6 +119,19 @@ module EditorView = struct
   let line_wrapping () =
     Jv.get (Lazy.force view) "lineWrapping" |> Extension.of_jv
 
+  let decorations : (Decoration.t State.RangeSet.ty, Jv.t) State.Facet.t =
+    let jv = Jv.get (Lazy.force view) "decorations" in
+    let decoration_conv =
+      Types.{ to_jv = Decoration.to_jv; of_jv = Decoration.of_jv }
+    in
+    let conv =
+      {
+        Types.to_jv = State.RangeSet.jv_of_ty;
+        of_jv = State.RangeSet.ty_of_jv decoration_conv;
+      }
+    in
+    State.Facet.create conv jv
+
   type theme = TO of (string * theme) list | TV of string
 
   let theme ?dark th =
@@ -144,6 +158,7 @@ module EditorView = struct
           List.iter (fun (k, v) -> Jv.set o k (to_obj v)) vs;
           o
     in
+    Brr.Console.log [ Jstr.v "Base theme"; to_obj th ];
     Jv.apply theme [| to_obj th |] |> Extension.of_jv
 end
 

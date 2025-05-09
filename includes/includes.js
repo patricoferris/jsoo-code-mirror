@@ -1,5 +1,5 @@
 import { EditorView, basicSetup } from "codemirror"
-import { EditorState, StateField, StateEffect, EditorSelection } from "@codemirror/state"
+import { EditorState, StateField, StateEffect, EditorSelection, RangeSet } from "@codemirror/state"
 import { hoverTooltip, showPanel, keymap, Decoration } from "@codemirror/view"
 import * as lint from "@codemirror/lint"
 import * as autocomplete from "@codemirror/autocomplete"
@@ -13,6 +13,7 @@ import { dracula } from 'thememirror';
 joo_global_object.__CM__view = EditorView;
 joo_global_object.__CM__state = EditorState;
 joo_global_object.__CM__Decoration = Decoration;
+joo_global_object.__CM__RangeSet = RangeSet;
 joo_global_object.__CM__EditorSelection = EditorSelection;
 joo_global_object.__CM__lint = lint;
 joo_global_object.__CM__autocomplete = autocomplete;

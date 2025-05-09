@@ -30,7 +30,7 @@ module Decoration : sig
     t
 
   val none : t State.RangeSet.ty
-  val range : t -> from:int -> ?to_:int -> unit -> t State.RangeSet.ty
+  val range : t -> from:int -> ?to_:int -> unit -> t State.Range.ty
 end
 
 module EditorView : sig
@@ -64,6 +64,7 @@ module EditorView : sig
 
   val theme : ?dark:bool -> theme -> Extension.t
   val base_theme : theme -> Extension.t
+  val decorations : (Decoration.t State.RangeSet.ty, Jv.t) State.Facet.t
 end
 
 module Panel : sig

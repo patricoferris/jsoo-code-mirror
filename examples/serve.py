@@ -1,31 +1,17 @@
-# -*- coding: utf-8 -*-
-from http.server import SimpleHTTPRequestHandler
-from socketserver import TCPServer
-from sys import argv
+#!/usr/bin/env python3
 
-port = 8000
+import http.server
 
-if len(argv) == 2:
-	port = int(argv[1])
+class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
+    def end_headers(self):
+        self.send_my_headers()
+        http.server.SimpleHTTPRequestHandler.end_headers(self)
+
+    def send_my_headers(self):
+        self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+        self.send_header("Pragma", "no-cache")
+        self.send_header("Expires", "0")
 
 
-handler = SimpleHTTPRequestHandler
-handler.extensions_map = {
-	'.manifest': 'text/cache-manifest',
-	'.html': 'text/html',
-	'.png': 'image/png',
-	'.jpg': 'image/jpg',
-	'.svg':	'image/svg+xml',
-	'.css':	'text/css',
-	'.js':	'application/x-javascript',
-	'.wasm': 'application/wasm',
-	'': 'application/octet-stream'
-}
-
-try:
-	httpd = TCPServer(("localhost", port), handler)
-	print(f"serving at port {port}")
-	httpd.serve_forever()
-except KeyboardInterrupt:
-	print("Server stopped, good bye!")
-
+if __name__ == '__main__':
+    http.server.test(HandlerClass=MyHTTPRequestHandler)
