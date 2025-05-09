@@ -49,7 +49,7 @@ module Decoration : sig
     t
 
   val none : t State.RangeSet.ty
-  val range : t -> from:int -> ?to_:int -> unit -> t State.Range.ty
+  val range : from:int -> ?to_:int -> t -> t State.Range.ty
 end = struct
   type t = Jv.t
 
@@ -72,7 +72,7 @@ end = struct
     let conv = Types.{ to_jv; of_jv } in
     State.RangeSet.ty_of_jv conv v
 
-  let range v ~from ?to_ () : t State.Range.ty =
+  let range ~from ?to_ v : t State.Range.ty =
     let args =
       match to_ with
       | None -> [| Jv.of_int from |]
@@ -107,7 +107,7 @@ module EditorView = struct
 
   let dom t = Jv.get t "dom" |> Brr.El.of_jv
 
-  let update_listener () : (Update.t -> unit, Jv.t) State.Facet.t =
+  let update_listener : (Update.t -> unit, Jv.t) State.Facet.t =
     let jv_of_fn f = Jv.callback ~arity:1 (fun u -> f (Update.of_jv u)) in
     let iconv = { Types.to_jv = jv_of_fn; of_jv = (fun _ -> assert false) } in
     let jv = Jv.get (Lazy.force view) "updateListener" in

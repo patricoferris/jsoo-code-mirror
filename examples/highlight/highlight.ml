@@ -36,17 +36,10 @@ let underline_field =
       let effects = State.Transaction.effects tr in
       List.fold_right
         (fun e cur ->
-          Brr.Console.log [ Jv.of_string "underline_field update fn" ];
           if State.StateEffect.is e add_underline then
             match State.StateEffect.value e add_underline with
             | Some { from; to_ } ->
-                Brr.Console.log
-                  [
-                    Jv.of_string
-                      (Printf.sprintf "adding underline range: %d to %d" from
-                         to_);
-                  ];
-                let add = View.Decoration.range underline_mark ~from ~to_ () in
+                let add = View.Decoration.range ~from ~to_ underline_mark in
                 State.RangeSet.update ~add:[ add ] cur
             | None -> cur
           else cur)

@@ -30,7 +30,7 @@ module Decoration : sig
     t
 
   val none : t State.RangeSet.ty
-  val range : t -> from:int -> ?to_:int -> unit -> t State.Range.ty
+  val range : from:int -> ?to_:int -> t -> t State.Range.ty
 end
 
 module EditorView : sig
@@ -56,7 +56,6 @@ module EditorView : sig
   end
 
   val dom : t -> Brr.El.t
-  val update_listener : unit -> (Update.t -> unit, Jv.t) State.Facet.t
   val line_wrapping : unit -> Extension.t
   val dispatch : t -> State.Transaction.t -> unit
 
@@ -65,6 +64,7 @@ module EditorView : sig
   val theme : ?dark:bool -> theme -> Extension.t
   val base_theme : theme -> Extension.t
   val decorations : (Decoration.t State.RangeSet.ty, Jv.t) State.Facet.t
+  val update_listener : (Update.t -> unit, Jv.t) State.Facet.t
 end
 
 module Panel : sig
