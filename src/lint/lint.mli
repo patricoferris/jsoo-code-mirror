@@ -9,7 +9,8 @@ module Action : sig
 
   val create :
     name:string -> (view:Editor.View.t -> from:int -> to_:int -> unit) -> t
-  (** [create ~name f] makes a new action with a function to call when the user activates the action *)
+  (** [create ~name f] makes a new action with a function to call when the user
+      activates the action *)
 end
 
 module Diagnostic : sig
