@@ -1,6 +1,6 @@
 import { EditorView, basicSetup } from "codemirror"
-import { EditorState } from "@codemirror/state"
-import { hoverTooltip } from "@codemirror/view"
+import { EditorState, RangeSet } from "@codemirror/state"
+import { hoverTooltip, Decoration, WidgetType } from "@codemirror/view"
 import * as lint from "@codemirror/lint"
 import * as autocomplete from "@codemirror/autocomplete"
 import * as dark from "@codemirror/theme-one-dark"
@@ -10,6 +10,9 @@ import { markdown } from "@codemirror/lang-markdown"
 
 joo_global_object.__CM__view = EditorView;
 joo_global_object.__CM__state = EditorState;
+joo_global_object.__CM__rangeSet = RangeSet;
+joo_global_object.__CM__decoration = Decoration;
+joo_global_object.__CM__widgetType = WidgetType;
 joo_global_object.__CM__lint = lint;
 joo_global_object.__CM__autocomplete = autocomplete;
 joo_global_object.__CM__hoverTooltip = hoverTooltip;

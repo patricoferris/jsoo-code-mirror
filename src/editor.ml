@@ -96,10 +96,19 @@ module View = struct
 
   let dom t = Jv.get t "dom" |> Brr.El.of_jv
 
-  let update_listener _ : (Update.t -> unit, Jv.t) State.facet =
+  let update_listener () : (Update.t -> unit, Jv.t) State.facet =
     let module F = State.FacetMaker (Func (Update)) in
     let jv = Jv.get g "updateListener" in
     Facet ((module F), F.of_jv jv)
+
+  let decorations () : (Decoration.Range_set.t, Jv.t) State.facet =
+    let module F = State.FacetMaker (Decoration.Range_set) in
+    let jv = Jv.get g "decorations" in
+    Facet ((module F), F.of_jv jv)
+
+  let request_measure t =
+    let _ = Jv.call t "requestMeasure" [||] in
+    ()
 
   let line_wrapping () = Jv.get g "lineWrapping" |> Extension.of_jv
 end
