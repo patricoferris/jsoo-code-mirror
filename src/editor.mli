@@ -74,6 +74,7 @@ module View : sig
     type t
 
     val state : t -> State.t
+    val doc_changed : t -> bool
 
     include Jv.CONV with type t := t
   end
@@ -81,4 +82,5 @@ module View : sig
   val dom : t -> Brr.El.t
   val update_listener : unit -> (Update.t -> unit, Jv.t) State.facet
   val line_wrapping : unit -> Extension.t
+  val set_doc : t -> Jstr.t -> unit
 end

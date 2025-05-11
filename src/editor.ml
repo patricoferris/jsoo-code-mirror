@@ -52,6 +52,17 @@ module State = struct
     Jv.call editor_state "create" [| config |]
 
   let doc t = Jv.get t "doc" |> Text.of_jv
+
+  let set_doc t str =
+    let arg =
+      Jv.obj
+        [|
+          ("from", Jv.of_int 0);
+          ("to", Jv.of_int (Text.length (doc t)));
+          ("insert", Jv.of_jstr str);
+        |]
+    in
+    Jv.call t "update" [| Jv.obj [| ("changes", arg) |] |]
 end
 
 (* Helper for function *)
@@ -90,6 +101,7 @@ module View = struct
     type t = Jv.t
 
     let state t = State.of_jv @@ Jv.get t "state"
+    let doc_changed t = Jv.to_bool @@ Jv.get t "docChanged"
 
     include (Jv.Id : Jv.CONV with type t := t)
   end
@@ -102,4 +114,9 @@ module View = struct
     Facet ((module F), F.of_jv jv)
 
   let line_wrapping () = Jv.get g "lineWrapping" |> Extension.of_jv
+
+  let set_doc t (doc : Jstr.t) =
+    let upd = State.set_doc (state t) doc in
+    let _ = Jv.call t "update" [| Jv.of_jv_array [| upd |] |] in
+    ()
 end
