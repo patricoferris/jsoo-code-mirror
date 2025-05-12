@@ -16,7 +16,8 @@ let init ?doc ?(exts = []) () =
 
 let _ =
   let _state, view =
-    init ~doc:"Hello, world2! Some test\nSome more text\n" ~exts:[] ()
+    init ~doc:"This doesn't have an asterisk in initially\nSome more text\n"
+      ~exts:[] ()
   in
   let selection = State.Transaction.Short { anchor = 10; head = Some 20 } in
   let transaction =

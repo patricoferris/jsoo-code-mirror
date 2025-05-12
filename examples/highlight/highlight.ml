@@ -106,7 +106,8 @@ let init ?doc ?(exts = []) () =
 let _ =
   Console.log [ Jv.of_string "init_underline" ];
   let _state, _view =
-    init ~doc:"Hello, world2! Some test\nSome more text\n" ~exts:[] ()
+    init ~doc:"Select some text and hit 'f1' to highlight it\nSome more text\n"
+      ~exts:[] ()
   in
   (* let transaction =
     State.Transaction.create 

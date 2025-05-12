@@ -21,7 +21,7 @@ let update dom v =
   El.set_children dom [ El.txt' (string_of_int length) ]
 
 let panel_constructor (_v : View.EditorView.t) =
-  let dom = Brr.El.div [ Brr.El.txt (Jstr.v "Hello, panel world") ] in
+  let dom = Brr.El.div [ Brr.El.txt (Jstr.v "Hello! This is a panel\n") ] in
   View.Panel.create ~update:(update dom) dom
 
 let _ =
@@ -58,5 +58,9 @@ let _ =
 
   let ext = State.Facet.of_ Keymap.keymap keymap in
 
-  let _editor = init ~exts:[ ext; State.StateField.extension help_state ] () in
+  let _editor =
+    init ~doc:"Press 'f1' to toggle the panel"
+      ~exts:[ ext; State.StateField.extension help_state ]
+      ()
+  in
   ()

@@ -1,9 +1,8 @@
 (executable
  (name theme)
  (modes js)
- (promote (until-clean))
  (libraries code-mirror))
 
 (alias
- (name default)
+ (name all)
  (deps index.html))
