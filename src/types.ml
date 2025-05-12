@@ -1,4 +1,4 @@
-type 'a conv = 'a Editor_impl.conv = { to_jv : 'a -> Jv.t; of_jv : Jv.t -> 'a }
+type 'a conv = { to_jv : 'a -> Jv.t; of_jv : Jv.t -> 'a }
 
 module State = struct
   module EditorState = struct
