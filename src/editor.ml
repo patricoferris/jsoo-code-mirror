@@ -102,4 +102,19 @@ module View = struct
     Facet ((module F), F.of_jv jv)
 
   let line_wrapping () = Jv.get g "lineWrapping" |> Extension.of_jv
+
+  let line_numbers fmt =
+    let fmt x _ = Jv.to_int x |> fmt |> Jv.of_string in
+    let config = Jv.obj [| ("formatNumber", Jv.callback ~arity:2 fmt) |] in
+    Jv.call Jv.global "__CM__lineNumbers" [| config |] |> Extension.of_jv
+
+  module Transaction = struct
+    type t = Jv.t
+
+    include (Jv.Id : Jv.CONV with type t := t)
+  end
+
+  let dispatch t transaction =
+    let _ = Jv.call t "dispatch" [| Transaction.to_jv transaction |] in
+    ()
 end

@@ -81,4 +81,13 @@ module View : sig
   val dom : t -> Brr.El.t
   val update_listener : unit -> (Update.t -> unit, Jv.t) State.facet
   val line_wrapping : unit -> Extension.t
+  val line_numbers : (int -> string) -> Extension.t
+
+  module Transaction : sig
+    type t
+
+    include Jv.CONV with type t := t
+  end
+
+  val dispatch : t -> Transaction.t -> unit
 end
