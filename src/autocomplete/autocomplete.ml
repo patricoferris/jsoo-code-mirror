@@ -28,7 +28,7 @@ module Context = struct
 
   include (Jv.Id : Jv.CONV with type t := t)
 
-  let state t = Jv.get t "state" |> Editor.State.of_jv
+  let state t = Jv.get t "state" |> State.EditorState.of_jv
   let pos t = Jv.Int.get t "pos"
   let explicit t = Jv.Bool.get t "explicit"
 
@@ -70,7 +70,7 @@ module Source = struct
       Fut.to_promise fut ~ok:(fun t ->
           Option.value ~default:Jv.null (Option.map Result.to_jv t))
     in
-    Jv.repr f
+    Jv.callback ~arity:1 f
 
   let from_list (l : Completion.t list) =
     Jv.call autocomplete "completeFromList" [| Jv.of_jv_list l |] |> of_jv

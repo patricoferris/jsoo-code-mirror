@@ -40,7 +40,8 @@ module Tooltip_view = struct
     let get_coords =
       Option.map
         (fun get_coords ->
-          Jv.repr (fun pos -> get_coords (Jv.to_int pos) |> coords_to_jv))
+          Jv.callback ~arity:1 (fun pos ->
+              get_coords (Jv.to_int pos) |> coords_to_jv))
         get_coords
     in
     let o = Jv.obj [||] in
@@ -50,14 +51,17 @@ module Tooltip_view = struct
     Jv.Bool.set_if_some o "overlap" overlap;
     Jv.set_if_some o "mount"
     @@ Option.map
-         (fun mount -> Jv.repr (fun view -> mount (Editor.View.of_jv view)))
+         (fun mount ->
+           Jv.callback ~arity:1 (fun view -> mount (View.EditorView.of_jv view)))
          mount;
     Jv.set_if_some o "update"
     @@ Option.map
          (fun update ->
-           Jv.repr (fun view_up -> update (Editor.View.Update.of_jv view_up)))
+           Jv.callback ~arity:1 (fun view_up ->
+               update (View.EditorView.Update.of_jv view_up)))
          update;
-    Jv.set_if_some o "positioned" @@ Option.map Jv.repr positioned;
+    Jv.set_if_some o "positioned"
+    @@ Option.map (Jv.callback ~arity:1) positioned;
     o
 end
 
@@ -74,8 +78,8 @@ module Tooltip = struct
     Jv.Int.set o "pos" pos;
     Jv.Int.set_if_some o "end" end_;
     Jv.set o "create"
-    @@ Jv.repr (fun view ->
-           create (Editor.View.of_jv view) |> Tooltip_view.to_jv);
+    @@ Jv.callback ~arity:1 (fun view ->
+           create (View.EditorView.of_jv view) |> Tooltip_view.to_jv);
     Jv.Bool.set_if_some o "above" above;
     Jv.Bool.set_if_some o "strictSide" strict_side;
     Jv.Bool.set_if_some o "arrow" arrow;
@@ -93,10 +97,11 @@ let hover_config ?hide_on_change ?hover_time () =
 let hover_tooltip ?config source =
   (* let g = Jv.get Jv.global "__CM__hoverTooltip" in *)
   let source =
-    Jv.repr @@ fun view pos side ->
+    Jv.callback ~arity:3 @@ fun view pos side ->
     let fut =
-      source ~view:(Editor.View.of_jv view) ~pos:(Jv.to_int pos)
-        ~side:(Jv.to_int side)
+      source
+        ~view:(View.EditorView.of_jv view)
+        ~pos:(Jv.to_int pos) ~side:(Jv.to_int side)
     in
     let fut = Fut.map (fun v -> Ok v) fut in
     Fut.to_promise fut ~ok:(fun t ->
