@@ -25,5 +25,10 @@ end
 val length : t -> int
 (** Length of the text *)
 
+val line_at : t -> int -> Line.t
+(** Get the line description from the given {e position} *)
+
 val line : int -> t -> Line.t
+(** Get the line description from the given {e line number} *)
+
 val to_jstr_array : t -> Jstr.t array

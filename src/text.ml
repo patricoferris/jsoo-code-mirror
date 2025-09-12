@@ -14,4 +14,5 @@ end
 
 let length t = Jv.Int.get t "length"
 let line n t = Jv.call t "line" [| Jv.of_int n |]
+let line_at t pos = Jv.call t "lineAt" [| Jv.of_int pos |] |> of_jv
 let to_jstr_array t = Jv.call t "toJSON" [||] |> Jv.to_jstr_array

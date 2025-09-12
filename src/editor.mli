@@ -1,3 +1,30 @@
+module Selection : sig
+  type t
+
+  include Jv.CONV with type t := t
+
+  module Range : sig
+    type t
+
+    include Jv.CONV with type t := t
+
+    val head : t -> int
+    (** The head of the range *)
+
+    val from : t -> int
+    (** The lower boundary of the range *)
+
+    val to' : t -> int
+    (** The upper boundary of the range *)
+
+    val anchor : t -> int
+    (** The anchor of the range, the one that does not move when extended *)
+  end
+
+  val main : t -> Range.t
+  (** Get the primary selection range *)
+end
+
 module State : sig
   type t
 
@@ -41,7 +68,13 @@ module State : sig
         -> ('i, 'o) facet
 
   val create : ?config:Config.t -> unit -> t
+  (** Create a new state *)
+
   val doc : t -> Text.t
+  (** Get the current document *)
+
+  val selection : t -> Selection.t
+  (** Get the current selection *)
 end
 
 module View : sig
@@ -76,6 +109,18 @@ module View : sig
     val state : t -> State.t
 
     include Jv.CONV with type t := t
+  end
+
+  module Plugin : sig
+    type view := t
+    type t
+    (** A {{: https://codemirror.net/docs/ref/#view.ViewPlugin} view plugin} *)
+
+    val v : (view -> unit) -> t
+    (** Create a new view plugin *)
+
+    val to_extension : t -> Extension.t
+    (** Coerce the plugin to an {! Extension.t} *)
   end
 
   val dom : t -> Brr.El.t

@@ -1,3 +1,20 @@
+module Selection = struct
+   type t = Jv.t
+   include (Jv.Id : Jv.CONV with type t := t)
+
+   module Range = struct
+     type t = Jv.t
+     include (Jv.Id : Jv.CONV with type t := t)
+
+     let head t = Jv.Int.get t "head"
+     let from t = Jv.Int.get t "from"
+     let to' t = Jv.Int.get t "to"
+     let anchor t = Jv.Int.get t "anchor"
+   end
+
+   let main t = Jv.get t "main" |> Range.of_jv
+end
+
 module State = struct
   module Config = struct
     type t = Jv.t
@@ -52,6 +69,7 @@ module State = struct
     Jv.call editor_state "create" [| config |]
 
   let doc t = Jv.get t "doc" |> Text.of_jv
+  let selection t = Jv.get t "selection" |> Selection.of_jv
 end
 
 (* Helper for function *)
@@ -63,7 +81,7 @@ end) =
 struct
   type t = I.t -> unit
 
-  let to_jv f = Jv.wrap_callback f
+  let to_jv f = Jv.callback ~arity:1 f
 end
 
 module View = struct
@@ -102,4 +120,19 @@ module View = struct
     Facet ((module F), F.of_jv jv)
 
   let line_wrapping () = Jv.get g "lineWrapping" |> Extension.of_jv
+
+  module Plugin = struct
+    type view = t
+    type t
+    include (Jv.Id : Jv.CONV with type t := t)
+
+    let plugin = Jv.get Jv.global "__CM__ViewPlugin"
+
+    let v (f : view -> unit) : t =
+      let f' = Jv.callback ~arity:1 f in
+      Jv.call plugin "define" [| f' |] |> of_jv
+
+    let to_extension t =
+      to_jv t |> Extension.of_jv
+  end
 end
