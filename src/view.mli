@@ -76,7 +76,10 @@ module EditorView : sig
 
   val dom : t -> Brr.El.t
   val line_wrapping : unit -> Extension.t
-  val dispatch : t -> State.Transaction.t -> unit
+
+  val dispatch : t -> State.TransactionSpec.t -> unit
+  (** [dispatch view spec] makes the transaction [spec] describes and applies it
+      to the view. *)
 
   type theme = TO of (string * theme) list | TV of string
 

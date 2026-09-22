@@ -18,26 +18,6 @@ module EditorStateConfig = struct
     of_jv o
 end
 
-module EditorState = struct
-  include EditorState
-
-  let editor_state = lazy (Jv.get Jv.global "__CM__state")
-
-  let create : ?config:EditorStateConfig.t -> unit -> t =
-   fun ?(config = EditorStateConfig.undefined) () ->
-    Jv.call (Lazy.force editor_state) "create"
-      [| EditorStateConfig.to_jv config |]
-    |> of_jv
-
-  let doc (t : t) = Jv.get (to_jv t) "doc" |> Text.of_jv
-
-  let field (t : t) (f : 'a StateField.t) =
-    let c = StateField.conv f in
-    Jv.call (to_jv t) "field" [| StateField.to_jv f |] |> c.of_jv
-
-  let selection (v : t) = Jv.get (to_jv v) "selection" |> EditorSelection.of_jv
-end
-
 module ChangeDesc : sig
   type t
 
@@ -271,6 +251,71 @@ end = struct
     |> StateEffect.of_jv (Tjv.conv Extension.to_jv Extension.of_jv)
 end
 
+(* A TransactionSpec describes a transaction to make: the changes,
+   selection and effects to apply. Dispatching one to a view, or
+   [EditorState.update], produces a Transaction, which records what was
+   done. *)
+module TransactionSpec = struct
+  type t = Jv.t
+
+  include (Jv.Id : Jv.CONV with type t := t)
+
+  type selection =
+    | Short of { anchor : int; head : int option }
+    | SelectionRange of SelectionRange.t
+
+  type change_spec = { from : int; to_ : int option; insert : string option }
+
+  let change_spec_to_jv = function
+    | { from; to_; insert } ->
+        let o = Jv.obj [||] in
+        Jv.set o "from" (Jv.of_int from);
+        Jv.set_if_some o "to" (Option.map Jv.of_int to_);
+        Jv.set_if_some o "insert" (Option.map Jv.of_string insert);
+        o
+
+  let selection_to_jv = function
+    | Short { anchor; head } ->
+        let o = Jv.obj [||] in
+        Jv.set o "anchor" (Jv.of_int anchor);
+        Jv.set_if_some o "head" (Option.map Jv.of_int head);
+        o
+    | SelectionRange r -> SelectionRange.to_jv r
+
+  let create ?(effects = []) ?selection ?changes ?scroll_into_view () =
+    let o = Jv.obj [||] in
+    Jv.set_if_some o "selection" (Option.map selection_to_jv selection);
+    Jv.set_if_some o "changes" (Option.map change_spec_to_jv changes);
+    Jv.set o "effects" (Jv.of_list StateEffect.to_jv effects);
+    Jv.Bool.set_if_some o "scrollIntoView" scroll_into_view;
+    of_jv o
+end
+
+module EditorState = struct
+  include EditorState
+
+  let editor_state = lazy (Jv.get Jv.global "__CM__state")
+
+  let create : ?config:EditorStateConfig.t -> unit -> t =
+   fun ?(config = EditorStateConfig.undefined) () ->
+    Jv.call (Lazy.force editor_state) "create"
+      [| EditorStateConfig.to_jv config |]
+    |> of_jv
+
+  let doc (t : t) = Jv.get (to_jv t) "doc" |> Text.of_jv
+
+  let field (t : t) (f : 'a StateField.t) =
+    let c = StateField.conv f in
+    Jv.call (to_jv t) "field" [| StateField.to_jv f |] |> c.of_jv
+
+  let selection (v : t) = Jv.get (to_jv v) "selection" |> EditorSelection.of_jv
+
+  let update (t : t) (specs : TransactionSpec.t list) : Transaction.t =
+    Jv.call (to_jv t) "update"
+      (Array.of_list (List.map TransactionSpec.to_jv specs))
+    |> Transaction.of_jv
+end
+
 module StateField = struct
   include StateField
 
@@ -333,28 +378,6 @@ end
 module Transaction = struct
   include Transaction
 
-  type selection =
-    | Short of { anchor : int; head : int option }
-    | SelectionRange of SelectionRange.t
-
-  type change_spec = { from : int; to_ : int option; insert : string option }
-
-  let change_spec_to_jv = function
-    | { from; to_; insert } ->
-        let o = Jv.obj [||] in
-        Jv.set o "from" (Jv.of_int from);
-        Jv.set_if_some o "to" (Option.map Jv.of_int to_);
-        Jv.set_if_some o "insert" (Option.map Jv.of_string insert);
-        o
-
-  let selection_to_jv = function
-    | Short { anchor; head } ->
-        let o = Jv.obj [||] in
-        Jv.set o "anchor" (Jv.of_int anchor);
-        Jv.set_if_some o "head" (Option.map Jv.of_int head);
-        o
-    | SelectionRange r -> SelectionRange.to_jv r
-
   let effects : t -> Jv.t StateEffect.t list =
    fun v ->
     Jv.get (to_jv v) "effects"
@@ -363,10 +386,8 @@ module Transaction = struct
   let changes : t -> ChangeDesc.t =
    fun v -> Jv.get (to_jv v) "changes" |> ChangeDesc.of_jv
 
-  let create ?(effects = []) ?selection ?changes () =
-    let o = Jv.obj [||] in
-    Jv.set_if_some o "selection" (Option.map selection_to_jv selection);
-    Jv.set_if_some o "changes" (Option.map change_spec_to_jv changes);
-    Jv.set o "effects" (Jv.of_list StateEffect.to_jv effects);
-    of_jv o
+  let state : t -> EditorState.t =
+   fun v -> Jv.get (to_jv v) "state" |> EditorState.of_jv
+
+  let doc_changed : t -> bool = fun v -> Jv.Bool.get (to_jv v) "docChanged"
 end

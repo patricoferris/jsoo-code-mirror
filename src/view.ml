@@ -141,8 +141,9 @@ module EditorView = struct
     let jv = Jv.get (Lazy.force view) "updateListener" in
     State.Facet.create iconv jv
 
-  let dispatch : t -> State.Transaction.t -> unit =
-   fun t tr -> Jv.call t "dispatch" [| State.Transaction.to_jv tr |] |> ignore
+  let dispatch : t -> State.TransactionSpec.t -> unit =
+   fun t spec ->
+    Jv.call t "dispatch" [| State.TransactionSpec.to_jv spec |] |> ignore
 
   let line_wrapping () =
     Jv.get (Lazy.force view) "lineWrapping" |> Extension.of_jv
