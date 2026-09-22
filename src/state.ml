@@ -244,6 +244,33 @@ module StateEffect = struct
     |> of_jv { of_jv = Extension.of_jv; to_jv = Extension.to_jv }
 end
 
+(* A compartment is a slot in the extension tree whose contents can be
+   replaced later, by dispatching the effect [reconfigure] returns. *)
+module Compartment : sig
+  type t
+
+  include Jv.CONV with type t := t
+
+  val make : unit -> t
+  val of_ : t -> Extension.t list -> Extension.t
+  val reconfigure : t -> Extension.t list -> Extension.t StateEffect.t
+end = struct
+  type t = Jv.t
+
+  include (Jv.Id : Jv.CONV with type t := t)
+
+  let compartment = lazy (Jv.get Jv.global "__CM__Compartment")
+  let make () = Jv.new' (Lazy.force compartment) [||]
+
+  let of_ t extensions =
+    Jv.call t "of" [| Jv.of_list Extension.to_jv extensions |]
+    |> Extension.of_jv
+
+  let reconfigure t extensions =
+    Jv.call t "reconfigure" [| Jv.of_list Extension.to_jv extensions |]
+    |> StateEffect.of_jv (Tjv.conv Extension.to_jv Extension.of_jv)
+end
+
 module StateField = struct
   include StateField
 

@@ -15,6 +15,17 @@ module EditorViewConfig : sig
   val undefined : t
 end
 
+(** Widgets: elements drawn in the document by a widget decoration. *)
+module WidgetType : sig
+  type t
+
+  include Jv.CONV with type t := t
+
+  val make : (unit -> Brr.El.t) -> t
+  (** [make to_dom] is a widget type whose element is [to_dom ()], called when
+      the editor needs to draw it. *)
+end
+
 module Decoration : sig
   type t
 
@@ -28,6 +39,11 @@ module Decoration : sig
     ?tagName:string ->
     unit ->
     t
+
+  val widget : ?block:bool -> ?side:int -> WidgetType.t -> t
+  (** [widget ?block ?side w] decorates a position with a widget of type [w];
+      [side] orders widgets at the same position, [block] puts it on its own
+      line. *)
 
   val none : t State.RangeSet.t
   val range : from:int -> ?to_:int -> t -> t State.Range.t
@@ -51,6 +67,9 @@ module EditorView : sig
     type t
 
     val state : t -> State.EditorState.t
+
+    val doc_changed : t -> bool
+    (** Whether this update changed the document. *)
 
     include Jv.CONV with type t := t
   end
@@ -84,3 +103,6 @@ module Panel : sig
 end
 
 val showPanel : (Panel.panel_constructor, Jv.t) State.Facet.t
+
+val line_numbers : ?format:(int -> string) -> unit -> Extension.t
+(** The line-number gutter; [format] renders a line's number. *)
