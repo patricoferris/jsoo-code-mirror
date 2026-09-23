@@ -164,6 +164,7 @@ module Text = struct
 
   let length (t : t) = Jv.Int.get (to_jv t) "length"
   let line n (t : t) = Jv.call (to_jv t) "line" [| Jv.of_int n |]
+  let line_at pos (t : t) = Jv.call (to_jv t) "lineAt" [| Jv.of_int pos |]
 
   let to_string (t : t) =
     Jv.call (to_jv t) "toString" [||] |> Jv.to_jstr |> Jstr.to_string
