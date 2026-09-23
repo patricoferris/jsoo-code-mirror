@@ -51,7 +51,16 @@ let underline_theme =
     base_theme
       (TO
          [
-           (".cm-underline", TO [ ("textDecoration", TV "underline 3px red") ]);
+           ( ".cm-underline",
+             TO
+               [
+                 ("textDecoration", TV "underline 3px red");
+                 (* Browsers skip the underline where glyphs touch it, which
+                    at this thickness leaves only fragments; draw it whole
+                    and below the descenders. *)
+                 ("textDecorationSkipInk", TV "none");
+                 ("textUnderlineOffset", TV "3px");
+               ] );
          ]))
 
 let underline_selection view =
