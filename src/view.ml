@@ -145,6 +145,15 @@ module EditorView = struct
    fun t spec ->
     Jv.call t "dispatch" [| State.TransactionSpec.to_jv spec |] |> ignore
 
+  let set_doc t doc =
+    let length = State.Text.length (State.EditorState.doc (state t)) in
+    dispatch t
+      (State.TransactionSpec.create
+         ~changes:{ from = 0; to_ = Some length; insert = Some doc }
+         ())
+
+  let request_measure t = Jv.call t "requestMeasure" [||] |> ignore
+
   let line_wrapping () =
     Jv.get (Lazy.force view) "lineWrapping" |> Extension.of_jv
 

@@ -81,6 +81,14 @@ module EditorView : sig
   (** [dispatch view spec] makes the transaction [spec] describes and applies it
       to the view. *)
 
+  val set_doc : t -> string -> unit
+  (** [set_doc view doc] replaces the whole document with [doc], as one
+      transaction. *)
+
+  val request_measure : t -> unit
+  (** Asks the view to re-measure on its next layout pass: needed after
+      something outside CodeMirror, such as a widget's content, changes size. *)
+
   type theme = TO of (string * theme) list | TV of string
 
   val theme : ?dark:bool -> theme -> Extension.t
