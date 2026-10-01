@@ -23,11 +23,9 @@ let () =
   let insert =
     TransactionSpec.create
       ~changes:
-        {
-          from = String.length "one\ntwo\nthree";
-          to_ = None;
-          insert = Some "\nfour";
-        }
+        (ChangeSpec.create
+           ~from:(String.length "one\ntwo\nthree")
+           ~insert:"\nfour" ())
       ~selection:
         (TransactionSpec.Short
            { anchor = String.length "one\ntwo\nthree\nfour"; head = None })

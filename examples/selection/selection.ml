@@ -26,7 +26,7 @@ let _ =
   let selection = TransactionSpec.Short { anchor = 10; head = Some 20 } in
   let transaction =
     TransactionSpec.create ~selection
-      ~changes:{ from = 10; insert = Some "*"; to_ = None }
+      ~changes:(ChangeSpec.create ~from:10 ~insert:"*" ())
       ()
   in
   EditorView.dispatch view transaction;

@@ -151,7 +151,7 @@ module EditorView = struct
     let length = State.Text.length (State.EditorState.doc (state t)) in
     dispatch t
       (State.TransactionSpec.create
-         ~changes:{ from = 0; to_ = Some length; insert = Some doc }
+         ~changes:(State.ChangeSpec.create ~from:0 ~to_:length ~insert:doc ())
          ())
 
   let request_measure t = Jv.call t "requestMeasure" [||] |> ignore

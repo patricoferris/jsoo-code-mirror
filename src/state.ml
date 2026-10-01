@@ -250,6 +250,30 @@ end = struct
     |> StateEffect.of_jv (Tjv.conv Extension.to_jv Extension.of_jv)
 end
 
+(* A ChangeSpec describes changes to the document: one replacement of
+   [from]..[to_] by [insert], or several at once. *)
+module ChangeSpec : sig
+  type t
+
+  include Jv.CONV with type t := t
+
+  val create : from:int -> ?to_:int -> ?insert:string -> unit -> t
+  val of_list : t list -> t
+end = struct
+  type t = Jv.t
+
+  include (Jv.Id : Jv.CONV with type t := t)
+
+  let create ~from ?to_ ?insert () =
+    let o = Jv.obj [||] in
+    Jv.set o "from" (Jv.of_int from);
+    Jv.set_if_some o "to" (Option.map Jv.of_int to_);
+    Jv.set_if_some o "insert" (Option.map Jv.of_string insert);
+    o
+
+  let of_list l = Jv.of_list to_jv l
+end
+
 (* A TransactionSpec describes a transaction to make: the changes,
    selection and effects to apply. Dispatching one to a view, or
    [EditorState.update], produces a Transaction, which records what was
@@ -263,16 +287,6 @@ module TransactionSpec = struct
     | Short of { anchor : int; head : int option }
     | Selection of EditorSelection.t
 
-  type change_spec = { from : int; to_ : int option; insert : string option }
-
-  let change_spec_to_jv = function
-    | { from; to_; insert } ->
-        let o = Jv.obj [||] in
-        Jv.set o "from" (Jv.of_int from);
-        Jv.set_if_some o "to" (Option.map Jv.of_int to_);
-        Jv.set_if_some o "insert" (Option.map Jv.of_string insert);
-        o
-
   let selection_to_jv = function
     | Short { anchor; head } ->
         let o = Jv.obj [||] in
@@ -284,7 +298,7 @@ module TransactionSpec = struct
   let create ?(effects = []) ?selection ?changes ?scroll_into_view () =
     let o = Jv.obj [||] in
     Jv.set_if_some o "selection" (Option.map selection_to_jv selection);
-    Jv.set_if_some o "changes" (Option.map change_spec_to_jv changes);
+    Jv.set_if_some o "changes" (Option.map ChangeSpec.to_jv changes);
     Jv.set o "effects" (Jv.of_list StateEffect.to_jv effects);
     Jv.Bool.set_if_some o "scrollIntoView" scroll_into_view;
     of_jv o
