@@ -263,6 +263,8 @@ let showPanel : (Panel.Constructor.pc, Jv.t) State.Facet.t =
   let iconv = Panel.Constructor.{ Tjv.of_jv; to_jv } in
   State.Facet.create iconv Panel.showPanel
 
+let line_numbers_fn = lazy (Jv.get Jv.global "__CM__lineNumbers")
+
 let line_numbers ?format () =
   let o = Jv.obj [||] in
   Jv.set_if_some o "formatNumber"
@@ -270,4 +272,4 @@ let line_numbers ?format () =
        (fun f ->
          Jv.callback ~arity:2 (fun n _state -> Jv.of_string (f (Jv.to_int n))))
        format);
-  Jv.call Jv.global "__CM__lineNumbers" [| o |] |> Extension.of_jv
+  Jv.apply (Lazy.force line_numbers_fn) [| o |] |> Extension.of_jv
