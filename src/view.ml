@@ -265,11 +265,12 @@ let showPanel : (Panel.Constructor.pc, Jv.t) State.Facet.t =
 
 let line_numbers_fn = lazy (Jv.get Jv.global "__CM__lineNumbers")
 
-let line_numbers ?format () =
+let line_numbers ?format_number () =
   let o = Jv.obj [||] in
   Jv.set_if_some o "formatNumber"
     (Option.map
        (fun f ->
-         Jv.callback ~arity:2 (fun n _state -> Jv.of_string (f (Jv.to_int n))))
-       format);
+         Jv.callback ~arity:2 (fun n state ->
+             Jv.of_string (f (Jv.to_int n) (State.EditorState.of_jv state))))
+       format_number);
   Jv.apply (Lazy.force line_numbers_fn) [| o |] |> Extension.of_jv

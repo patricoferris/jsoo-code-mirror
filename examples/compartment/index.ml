@@ -14,7 +14,10 @@ let numbers = Compartment.make ()
 let wrapping = Compartment.make ()
 let offset = ref 0
 let wrapped = ref true
-let gutter () = line_numbers ~format:(fun n -> string_of_int (n + !offset)) ()
+
+let gutter () =
+  line_numbers ~format_number:(fun n _state -> string_of_int (n + !offset)) ()
+
 let wrap () = if !wrapped then [ EditorView.line_wrapping () ] else []
 
 let button label on_click =
