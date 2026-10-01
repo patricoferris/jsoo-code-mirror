@@ -60,7 +60,7 @@ let _ =
 
   let keymap = Keymap.create ~key:"F1" ~run () in
 
-  let ext = Facet.of_ Keymap.keymap keymap in
+  let ext = Facet.of_ Keymap.keymap [ keymap ] in
 
   let _editor =
     init ~doc:"Press 'f1' to toggle the panel"

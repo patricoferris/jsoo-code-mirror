@@ -215,10 +215,6 @@ module StateEffect = struct
     let conv = conv t in
     Jv.call (to_jv t) "of" [| conv.to_jv v |] |> of_jv conv
 
-  let of_l ty vs =
-    let conv = conv ty in
-    Jv.call (to_jv ty) "of" [| Jv.of_list conv.to_jv vs |] |> of_jv conv
-
   let append_config () : Extension.t StateEffect.t =
     Jv.get (Lazy.force state_effect) "appendConfig"
     |> of_jv { of_jv = Extension.of_jv; to_jv = Extension.to_jv }

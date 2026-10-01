@@ -20,6 +20,6 @@ let create ?key ?run () =
   Jv.set_if_some o "run" run;
   o
 
-let keymap : (t, Jv.t) State.Facet.t =
-  let iconv = Tjv.{ of_jv; to_jv } in
+let keymap : (t list, Jv.t) State.Facet.t =
+  let iconv = Tjv.{ of_jv = Jv.to_list of_jv; to_jv = Jv.of_list to_jv } in
   State.Facet.create iconv (Lazy.force keymap)
