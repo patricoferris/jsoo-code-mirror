@@ -15,7 +15,7 @@ end
 
 module Diagnostic : sig
   type t
-  type severity = Info | Warning | Error
+  type severity = Hint | Info | Warning | Error
 
   val severity_of_string : string -> severity
   val severity_to_string : severity -> string

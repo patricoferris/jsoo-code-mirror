@@ -27,15 +27,17 @@ module Diagnostic = struct
   let from t = Jv.Int.get t "from"
   let to_ t = Jv.Int.get t "to"
 
-  type severity = Info | Warning | Error
+  type severity = Hint | Info | Warning | Error
 
   let severity_of_string = function
+    | "hint" -> Hint
     | "info" -> Info
     | "warning" -> Warning
     | "error" -> Error
     | _ -> raise (Invalid_argument "Unknown severity level")
 
   let severity_to_string = function
+    | Hint -> "hint"
     | Info -> "info"
     | Warning -> "warning"
     | Error -> "error"
