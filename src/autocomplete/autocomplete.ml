@@ -49,12 +49,12 @@ module Result = struct
 
   include (Jv.Id : Jv.CONV with type t := t)
 
-  let create ~from ?to_ ~options ?span ?filter () =
+  let create ~from ?to_ ~options ?valid_for ?filter () =
     let o = Jv.obj [||] in
     Jv.Int.set o "from" from;
     Jv.Int.set_if_some o "to" to_;
     Jv.set o "options" (Jv.of_list Completion.to_jv options);
-    Jv.set_if_some o "span" (Option.map RegExp.to_jv span);
+    Jv.set_if_some o "validFor" (Option.map RegExp.to_jv valid_for);
     Jv.Bool.set_if_some o "filter" filter;
     o
 end
@@ -84,7 +84,7 @@ let config ?activate_on_typing ?override ?max_rendered_options ?default_key_map
   Jv.Bool.set_if_some o "activateOnTyping" activate_on_typing;
   Jv.set_if_some o "override" (Option.map (fun v -> Jv.of_jv_list v) override);
   Jv.Int.set_if_some o "maxRenderedOptions" max_rendered_options;
-  Jv.Bool.set_if_some o "defaultKeyMap" default_key_map;
+  Jv.Bool.set_if_some o "defaultKeymap" default_key_map;
   Jv.Bool.set_if_some o "aboveCursor" above_cursor;
   Jv.set_if_some o "optionClass" option_class;
   Jv.Bool.set_if_some o "icons" icons;

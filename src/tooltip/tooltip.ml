@@ -90,8 +90,8 @@ type hover_config = Jv.t
 
 let hover_config ?hide_on_change ?hover_time () =
   let o = Jv.obj [||] in
-  Jv.Bool.set_if_some o "hide_on_change" hide_on_change;
-  Jv.Int.set_if_some o "hover_time" hover_time;
+  Jv.Bool.set_if_some o "hideOnChange" hide_on_change;
+  Jv.Int.set_if_some o "hoverTime" hover_time;
   o
 
 let hover_tooltip ?config source =

@@ -87,7 +87,7 @@ module Result : sig
     from:int ->
     ?to_:int ->
     options:Completion.t list ->
-    ?span:RegExp.t ->
+    ?valid_for:RegExp.t ->
     ?filter:bool ->
     unit ->
     t
@@ -99,7 +99,7 @@ module Result : sig
         The end of the range that is being completed. Defaults to the main
         cursor position.
       @param options The completions returned.
-      @param span
+      @param valid_for
         When given, further input that causes the part of the document between
         [from] and [to_] to match this regular expression will not query the
         completion source again
