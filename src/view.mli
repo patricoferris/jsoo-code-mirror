@@ -1,3 +1,7 @@
+type editor_view
+(** The type of {!EditorView.t}, declared ahead of it for the callbacks that
+    receive the view. *)
+
 module EditorViewConfig : sig
   type t
 
@@ -15,6 +19,17 @@ module EditorViewConfig : sig
   val undefined : t
 end
 
+(** Widgets: elements drawn in the document by a widget decoration. *)
+module WidgetType : sig
+  type t
+
+  include Jv.CONV with type t := t
+
+  val make : to_dom:(editor_view -> Brr.El.t) -> unit -> t
+  (** [make ~to_dom ()] is a widget type whose element is [to_dom view], called
+      when the editor needs to draw it. *)
+end
+
 module Decoration : sig
   type t
 
@@ -29,12 +44,17 @@ module Decoration : sig
     unit ->
     t
 
+  val widget : ?block:bool -> ?side:int -> WidgetType.t -> t
+  (** [widget ?block ?side w] decorates a position with a widget of type [w];
+      [side] orders widgets at the same position, [block] puts it on its own
+      line. *)
+
   val none : t State.RangeSet.t
   val range : from:int -> ?to_:int -> t -> t State.Range.t
 end
 
 module EditorView : sig
-  type t
+  type t = editor_view
   (** Editor view *)
 
   include Jv.CONV with type t := t
@@ -52,12 +72,26 @@ module EditorView : sig
 
     val state : t -> State.EditorState.t
 
+    val doc_changed : t -> bool
+    (** Whether this update changed the document. *)
+
     include Jv.CONV with type t := t
   end
 
   val dom : t -> Brr.El.t
   val line_wrapping : unit -> Extension.t
-  val dispatch : t -> State.Transaction.t -> unit
+
+  val dispatch : t -> State.TransactionSpec.t -> unit
+  (** [dispatch view spec] makes the transaction [spec] describes and applies it
+      to the view. *)
+
+  val set_doc : t -> string -> unit
+  (** [set_doc view doc] replaces the whole document with [doc], as one
+      transaction. *)
+
+  val request_measure : t -> unit
+  (** Asks the view to re-measure on its next layout pass: needed after
+      something outside CodeMirror, such as a widget's content, changes size. *)
 
   type theme = TO of (string * theme) list | TV of string
 
@@ -84,3 +118,6 @@ module Panel : sig
 end
 
 val showPanel : (Panel.panel_constructor, Jv.t) State.Facet.t
+
+val line_numbers : ?format:(int -> string) -> unit -> Extension.t
+(** The line-number gutter; [format] renders a line's number. *)

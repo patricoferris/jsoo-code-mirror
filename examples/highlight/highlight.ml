@@ -32,7 +32,7 @@ let underline_field =
   StateField.define to_jv of_jv
     ~create:(fun _ -> Decoration.none)
     ~update:(fun v tr ->
-      let v = RangeSet.map v (State.Transaction.changes tr) in
+      let v = RangeSet.map v (Transaction.changes tr) in
       let effects = Transaction.effects tr in
       List.fold_right
         (fun e cur ->
@@ -44,18 +44,27 @@ let underline_field =
             | None -> cur
           else cur)
         effects v)
-    ~provide:(State.Facet.from EditorView.decorations)
+    ~provide:(Facet.from EditorView.decorations)
 
 let underline_theme =
   EditorView.(
     base_theme
       (TO
          [
-           (".cm-underline", TO [ ("textDecoration", TV "underline 3px red") ]);
+           ( ".cm-underline",
+             TO
+               [
+                 ("textDecoration", TV "underline 3px red");
+                 (* Browsers skip the underline where glyphs touch it, which
+                    at this thickness leaves only fragments; draw it whole
+                    and below the descenders. *)
+                 ("textDecorationSkipInk", TV "none");
+                 ("textUnderlineOffset", TV "3px");
+               ] );
          ]))
 
 let underline_selection view =
-  let selection = EditorState.selection (View.EditorView.state view) in
+  let selection = EditorState.selection (EditorView.state view) in
   let ranges = EditorSelection.ranges selection in
   let effects =
     List.filter_map
@@ -64,7 +73,7 @@ let underline_selection view =
         else
           let from = SelectionRange.from r in
           let to_ = SelectionRange.to_ r in
-          Some (State.StateEffect.of_ add_underline { from; to_ }))
+          Some (StateEffect.of_ add_underline { from; to_ }))
       ranges
     |> List.map StateEffect.any
   in
@@ -74,18 +83,18 @@ let underline_selection view =
       let state = EditorView.state view in
       let effects =
         try
-          ignore (State.EditorState.field state underline_field);
+          ignore (EditorState.field state underline_field);
           effects
         with _ ->
           let x =
             StateEffect.of_l
-              (State.StateEffect.append_config ())
+              (StateEffect.append_config ())
               [ StateField.extension underline_field; underline_theme ]
           in
           Console.log [ Jv.of_string "adding underline fields and theme" ];
           StateEffect.any x :: effects
       in
-      EditorView.dispatch view (State.Transaction.create ~effects ());
+      EditorView.dispatch view (TransactionSpec.create ~effects ());
       true
 
 let keymap = Keymap.create ~key:"F1" ~run:underline_selection ()
@@ -109,8 +118,8 @@ let _ =
       ~exts:[] ()
   in
   (* let transaction =
-    Transaction.create 
-      ~effects:[State.StateEffect.of_ add_underline { from = 10; to_ = 20 }]
+    TransactionSpec.create
+      ~effects:[StateEffect.of_ add_underline { from = 10; to_ = 20 }]
       ()
   in
   EditorView.dispatch view transaction;

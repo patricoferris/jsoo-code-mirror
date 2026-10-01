@@ -1,6 +1,6 @@
 import { EditorView, basicSetup } from "codemirror"
-import { EditorState, StateField, StateEffect, EditorSelection, RangeSet } from "@codemirror/state"
-import { hoverTooltip, showPanel, keymap, Decoration } from "@codemirror/view"
+import { EditorState, StateField, StateEffect, EditorSelection, RangeSet, Compartment } from "@codemirror/state"
+import { hoverTooltip, showPanel, keymap, Decoration, WidgetType, lineNumbers } from "@codemirror/view"
 import * as lint from "@codemirror/lint"
 import * as autocomplete from "@codemirror/autocomplete"
 import * as dark from "@codemirror/theme-one-dark"
@@ -28,3 +28,6 @@ joo_global_object.__CM__StateField = StateField;
 joo_global_object.__CM__StateEffect = StateEffect;
 joo_global_object.__CM__keymap = keymap;
 joo_global_object.__CM__theme_dracula = dracula;
+joo_global_object.__CM__Compartment = Compartment;
+joo_global_object.__CM__WidgetType = WidgetType;
+joo_global_object.__CM__lineNumbers = lineNumbers;
