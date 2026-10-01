@@ -22,7 +22,7 @@ module Diagnostic : sig
 
   val create :
     ?source:string ->
-    ?actions:t array ->
+    ?actions:Action.t array ->
     from:int ->
     to_:int ->
     severity:severity ->
