@@ -8,7 +8,9 @@ let dracula = Jv.get Jv.global "__CM__theme_dracula" |> Extension.of_jv
 
 let init ?doc () =
   let config =
-    EditorStateConfig.create ?doc ~extensions:[ dracula; basic_setup ] ()
+    EditorStateConfig.create ?doc
+      ~extensions:(Extension.of_list [ dracula; basic_setup ])
+      ()
   in
   let state = EditorState.create ~config () in
   let config =

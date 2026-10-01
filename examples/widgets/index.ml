@@ -77,7 +77,8 @@ let () =
   in
   let config =
     EditorStateConfig.create ~doc:initial_doc
-      ~extensions:[ basic_setup; keys; StateField.extension notes ]
+      ~extensions:
+        (Extension.of_list [ basic_setup; keys; StateField.extension notes ])
       ()
   in
   let state = EditorState.create ~config () in

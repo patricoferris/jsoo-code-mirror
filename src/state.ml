@@ -6,15 +6,14 @@ module EditorStateConfig = struct
   let create :
       ?doc:string ->
       ?selection:EditorSelection.t ->
-      ?extensions:Extension.t list ->
+      ?extensions:Extension.t ->
       unit ->
       t =
    fun ?doc ?selection ?extensions () ->
     let o = Jv.obj [||] in
     Jv.Jstr.set_if_some o "doc" (Option.map Jstr.of_string doc);
     Jv.set_if_some o "selection" (Option.map EditorSelection.to_jv selection);
-    Jv.set_if_some o "extensions"
-      (Option.map (Jv.of_list Extension.to_jv) extensions);
+    Jv.set_if_some o "extensions" (Option.map Extension.to_jv extensions);
     of_jv o
 end
 
@@ -233,8 +232,8 @@ module Compartment : sig
   include Jv.CONV with type t := t
 
   val make : unit -> t
-  val of_ : t -> Extension.t list -> Extension.t
-  val reconfigure : t -> Extension.t list -> Extension.t StateEffect.t
+  val of_ : t -> Extension.t -> Extension.t
+  val reconfigure : t -> Extension.t -> Extension.t StateEffect.t
 end = struct
   type t = Jv.t
 
@@ -243,12 +242,11 @@ end = struct
   let compartment = lazy (Jv.get Jv.global "__CM__Compartment")
   let make () = Jv.new' (Lazy.force compartment) [||]
 
-  let of_ t extensions =
-    Jv.call t "of" [| Jv.of_list Extension.to_jv extensions |]
-    |> Extension.of_jv
+  let of_ t extension =
+    Jv.call t "of" [| Extension.to_jv extension |] |> Extension.of_jv
 
-  let reconfigure t extensions =
-    Jv.call t "reconfigure" [| Jv.of_list Extension.to_jv extensions |]
+  let reconfigure t extension =
+    Jv.call t "reconfigure" [| Extension.to_jv extension |]
     |> StateEffect.of_jv (Tjv.conv Extension.to_jv Extension.of_jv)
 end
 

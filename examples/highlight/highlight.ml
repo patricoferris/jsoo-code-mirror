@@ -102,7 +102,9 @@ let ext = Facet.of_ Keymap.keymap keymap
 
 let init ?doc ?(exts = []) () =
   let config =
-    EditorStateConfig.create ?doc ~extensions:(basic_setup :: ext :: exts) ()
+    EditorStateConfig.create ?doc
+      ~extensions:(Extension.of_list (basic_setup :: ext :: exts))
+      ()
   in
   let state = EditorState.create ~config () in
   let config =

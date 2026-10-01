@@ -18,7 +18,8 @@ let wrapped = ref true
 let gutter () =
   line_numbers ~format_number:(fun n _state -> string_of_int (n + !offset)) ()
 
-let wrap () = if !wrapped then [ EditorView.line_wrapping () ] else []
+let wrap () =
+  if !wrapped then EditorView.line_wrapping () else Extension.of_list []
 
 let button label on_click =
   let b = El.button [ El.txt' label ] in
@@ -37,11 +38,12 @@ let () =
   let config =
     EditorStateConfig.create ~doc
       ~extensions:
-        [
-          basic_setup;
-          Compartment.of_ numbers [ gutter () ];
-          Compartment.of_ wrapping (wrap ());
-        ]
+        (Extension.of_list
+           [
+             basic_setup;
+             Compartment.of_ numbers (gutter ());
+             Compartment.of_ wrapping (wrap ());
+           ])
       ()
   in
   let state = EditorState.create ~config () in
@@ -62,7 +64,7 @@ let () =
       [
         button "Number from 100" (fun () ->
             offset := if !offset = 0 then 99 else 0;
-            reconfigure view numbers [ gutter () ]);
+            reconfigure view numbers (gutter ()));
         El.txt' " ";
         button "Toggle wrapping" (fun () ->
             wrapped := not !wrapped;
