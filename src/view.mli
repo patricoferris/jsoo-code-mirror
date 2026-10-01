@@ -1,3 +1,7 @@
+type editor_view
+(** The type of {!EditorView.t}, declared ahead of it for the callbacks that
+    receive the view. *)
+
 module EditorViewConfig : sig
   type t
 
@@ -21,9 +25,9 @@ module WidgetType : sig
 
   include Jv.CONV with type t := t
 
-  val make : (unit -> Brr.El.t) -> t
-  (** [make to_dom] is a widget type whose element is [to_dom ()], called when
-      the editor needs to draw it. *)
+  val make : to_dom:(editor_view -> Brr.El.t) -> unit -> t
+  (** [make ~to_dom ()] is a widget type whose element is [to_dom view], called
+      when the editor needs to draw it. *)
 end
 
 module Decoration : sig
@@ -50,7 +54,7 @@ module Decoration : sig
 end
 
 module EditorView : sig
-  type t
+  type t = editor_view
   (** Editor view *)
 
   include Jv.CONV with type t := t

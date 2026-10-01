@@ -19,12 +19,14 @@ let add_note =
       Some (ChangeDesc.mapPos changes pos))
 
 let note_widget text =
-  WidgetType.make (fun () ->
+  WidgetType.make
+    ~to_dom:(fun _view ->
       let el = El.div [ El.txt' text ] in
       El.set_inline_style (Jstr.v "color") (Jstr.v "#666") el;
       El.set_inline_style (Jstr.v "font-style") (Jstr.v "italic") el;
       El.set_inline_style (Jstr.v "padding-left") (Jstr.v "2em") el;
       el)
+    ()
 
 let decoration_conv = { Tjv.to_jv = Decoration.to_jv; of_jv = Decoration.of_jv }
 

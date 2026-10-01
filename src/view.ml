@@ -2,6 +2,8 @@ let view = lazy (Jv.get Jv.global "__CM__view")
 
 include Types.View
 
+type editor_view = Jv.t
+
 module EditorViewConfig : sig
   type t
 
@@ -39,7 +41,7 @@ module WidgetType : sig
 
   include Jv.CONV with type t := t
 
-  val make : (unit -> Brr.El.t) -> t
+  val make : to_dom:(editor_view -> Brr.El.t) -> unit -> t
 end = struct
   type t = Jv.t
 
@@ -47,10 +49,10 @@ end = struct
 
   let widget_type = lazy (Jv.get Jv.global "__CM__WidgetType")
 
-  let make to_dom =
+  let make ~to_dom () =
     let w = Jv.new' (Lazy.force widget_type) [||] in
     Jv.set w "toDOM"
-      (Jv.callback ~arity:1 (fun _view -> Brr.El.to_jv (to_dom ())));
+      (Jv.callback ~arity:1 (fun view -> Brr.El.to_jv (to_dom view)));
     w
 end
 
@@ -111,7 +113,7 @@ end = struct
 end
 
 module EditorView = struct
-  type t = Jv.t
+  type t = editor_view
 
   include (Jv.Id : Jv.CONV with type t := t)
 
