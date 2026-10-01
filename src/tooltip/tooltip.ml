@@ -18,7 +18,7 @@ module Tooltip_view = struct
     Jv.Int.set o "y" y;
     o
 
-  let _coords_of_jv o =
+  let coords_of_jv o =
     {
       left = Jv.Int.get o "left";
       right = Jv.Int.get o "right";
@@ -61,7 +61,10 @@ module Tooltip_view = struct
                update (View.EditorView.Update.of_jv view_up)))
          update;
     Jv.set_if_some o "positioned"
-    @@ Option.map (Jv.callback ~arity:1) positioned;
+    @@ Option.map
+         (fun positioned ->
+           Jv.callback ~arity:1 (fun space -> positioned (coords_of_jv space)))
+         positioned;
     o
 end
 
