@@ -22,7 +22,7 @@ module Diagnostic : sig
 
   val create :
     ?source:string ->
-    ?actions:Action.t array ->
+    ?actions:Action.t list ->
     from:int ->
     to_:int ->
     severity:severity ->
@@ -34,11 +34,11 @@ module Diagnostic : sig
   val from : t -> int
   val to_ : t -> int
   val source : t -> Jstr.t option
-  val actions : t -> Action.t array option
+  val actions : t -> Action.t list option
   val message : t -> Jstr.t
 end
 
 val create :
   ?delay:int ->
-  (View.EditorView.t -> Diagnostic.t array Fut.t) ->
+  (View.EditorView.t -> Diagnostic.t list Fut.t) ->
   Code_mirror.Extension.t

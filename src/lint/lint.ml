@@ -52,17 +52,17 @@ module Diagnostic = struct
     Jv.Jstr.set o "severity" (severity_to_string severity |> Jstr.v);
     Jv.Jstr.set o "message" (Jstr.v message);
     Jv.Jstr.set_if_some o "source" (Option.map Jstr.v source);
-    Jv.set_if_some o "actions" (Option.map (Jv.of_array Action.to_jv) actions);
+    Jv.set_if_some o "actions" (Option.map (Jv.of_list Action.to_jv) actions);
     o
 
   let source t = Jv.Jstr.find t "source"
   let message t = Jv.Jstr.get t "message"
-  let actions t = Option.map (Jv.to_array Action.to_jv) (Jv.find t "actions")
+  let actions t = Option.map (Jv.to_list Action.to_jv) (Jv.find t "actions")
 
   include (Jv.Id : Jv.CONV with type t := t)
 end
 
-let create ?delay (source : View.EditorView.t -> Diagnostic.t array Fut.t) =
+let create ?delay (source : View.EditorView.t -> Diagnostic.t list Fut.t) =
   let o =
     match delay with
     | None -> Jv.obj [||]
@@ -70,7 +70,7 @@ let create ?delay (source : View.EditorView.t -> Diagnostic.t array Fut.t) =
   in
   let source' view =
     let fut =
-      Fut.map (Jv.of_array Diagnostic.to_jv)
+      Fut.map (Jv.of_list Diagnostic.to_jv)
       @@ source (View.EditorView.of_jv view)
     in
     Fut.to_promise ~ok:Fun.id (Fut.map Result.ok fut)
