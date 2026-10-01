@@ -1,5 +1,3 @@
-type 'a conv = { to_jv : 'a -> Jv.t; of_jv : Jv.t -> 'a }
-
 module State = struct
   module EditorState = struct
     type t = Jv.t
@@ -34,32 +32,25 @@ module State = struct
   end
 
   module StateEffect = struct
-    type t = Jv.t
+    type 'a t = 'a Tjv.t
 
-    include (Jv.Id : Jv.CONV with type t := t)
-
-    type 'a ty = 'a conv * Jv.t
-
-    let ty_to_jv : 'a ty -> Jv.t = fun (_, t) -> t
-    let conv_of_ty (conv, _) = conv
-    let ty_of_jv conv jv = (conv, jv)
+    include (Tjv.Id : Tjv.CONV with type 'a t := 'a t)
   end
 
   module StateField = struct
-    type 'a t = 'a conv * Jv.t
+    type 'a t = 'a Tjv.t
 
-    let of_jv conv jv = (conv, jv)
-    let extension (_, v) = Extension.of_jv v
-    let to_jv (_, v) = v
-    let conv (c, _) = c
+    include (Tjv.Id : Tjv.CONV with type 'a t := 'a t)
+
+    let extension v = Extension.of_jv (to_jv v)
   end
 
   module Facet = struct
-    type ('input, 'output) t = 'input conv * Jv.t
+    type ('input, 'output) t = 'input Tjv.t
 
-    let to_jv (_, v) = v
-    let create iconv v = (iconv, v)
-    let to_conv (c, _) = c
+    let to_jv v = Tjv.Id.to_jv v
+    let create = Tjv.Id.of_jv
+    let to_conv = Tjv.Id.conv
   end
 
   module Transaction = struct

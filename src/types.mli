@@ -1,5 +1,3 @@
-type 'a conv = { to_jv : 'a -> Jv.t; of_jv : Jv.t -> 'a }
-
 module State : sig
   module EditorStateConfig : sig
     type t
@@ -35,31 +33,25 @@ module State : sig
   end
 
   module StateEffect : sig
-    type t
-    type 'a ty
+    type 'a t
 
-    include Jv.CONV with type t := t
-
-    val ty_to_jv : 'a ty -> Jv.t
-    val conv_of_ty : 'a ty -> 'a conv
-    val ty_of_jv : 'a conv -> Jv.t -> 'a ty
+    include Tjv.CONV with type 'a t := 'a t
   end
 
   module StateField : sig
     type 'a t
 
+    include Tjv.CONV with type 'a t := 'a t
+
     val extension : 'a t -> Extension.t
-    val conv : 'a t -> 'a conv
-    val to_jv : 'a t -> Jv.t
-    val of_jv : 'a conv -> Jv.t -> 'a t
   end
 
   module Facet : sig
     type ('input, 'output) t
 
     val to_jv : ('input, 'output) t -> Jv.t
-    val to_conv : ('input, 'output) t -> 'input conv
-    val create : 'input conv -> Jv.t -> ('input, 'output) t
+    val to_conv : ('input, 'output) t -> 'input Tjv.conv
+    val create : 'input Tjv.conv -> Jv.t -> ('input, 'output) t
   end
 end
 

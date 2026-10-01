@@ -48,8 +48,8 @@ module Decoration : sig
     unit ->
     t
 
-  val none : t State.RangeSet.ty
-  val range : from:int -> ?to_:int -> t -> t State.Range.ty
+  val none : t State.RangeSet.t
+  val range : from:int -> ?to_:int -> t -> t State.Range.t
 end = struct
   type t = Jv.t
 
@@ -69,18 +69,18 @@ end = struct
 
   let none =
     let v = Jv.get (Lazy.force decoration) "none" in
-    let conv = Types.{ to_jv; of_jv } in
-    State.RangeSet.ty_of_jv conv v
+    let conv = Tjv.{ to_jv; of_jv } in
+    State.RangeSet.of_jv conv v
 
-  let range ~from ?to_ v : t State.Range.ty =
+  let range ~from ?to_ v : t State.Range.t =
     let args =
       match to_ with
       | None -> [| Jv.of_int from |]
       | Some to_ -> [| Jv.of_int from; Jv.of_int to_ |]
     in
     let v = Jv.call v "range" args in
-    let conv = Types.{ to_jv; of_jv } in
-    State.Range.ty_of_jv conv v
+    let conv = Tjv.{ to_jv; of_jv } in
+    State.Range.of_jv conv v
 end
 
 module EditorView = struct
@@ -109,7 +109,7 @@ module EditorView = struct
 
   let update_listener : (Update.t -> unit, Jv.t) State.Facet.t =
     let jv_of_fn f = Jv.callback ~arity:1 (fun u -> f (Update.of_jv u)) in
-    let iconv = { Types.to_jv = jv_of_fn; of_jv = (fun _ -> assert false) } in
+    let iconv = { Tjv.to_jv = jv_of_fn; of_jv = (fun _ -> assert false) } in
     let jv = Jv.get (Lazy.force view) "updateListener" in
     State.Facet.create iconv jv
 
@@ -119,15 +119,15 @@ module EditorView = struct
   let line_wrapping () =
     Jv.get (Lazy.force view) "lineWrapping" |> Extension.of_jv
 
-  let decorations : (Decoration.t State.RangeSet.ty, Jv.t) State.Facet.t =
+  let decorations : (Decoration.t State.RangeSet.t, Jv.t) State.Facet.t =
     let jv = Jv.get (Lazy.force view) "decorations" in
     let decoration_conv =
-      Types.{ to_jv = Decoration.to_jv; of_jv = Decoration.of_jv }
+      Tjv.{ to_jv = Decoration.to_jv; of_jv = Decoration.of_jv }
     in
     let conv =
       {
-        Types.to_jv = State.RangeSet.jv_of_ty;
-        of_jv = State.RangeSet.ty_of_jv decoration_conv;
+        Tjv.to_jv = State.RangeSet.to_jv;
+        of_jv = State.RangeSet.of_jv decoration_conv;
       }
     in
     State.Facet.create conv jv
@@ -221,5 +221,5 @@ module Panel = struct
 end
 
 let showPanel : (Panel.Constructor.pc, Jv.t) State.Facet.t =
-  let iconv = Panel.Constructor.{ Types.of_jv; to_jv } in
+  let iconv = Panel.Constructor.{ Tjv.of_jv; to_jv } in
   State.Facet.create iconv Panel.showPanel
