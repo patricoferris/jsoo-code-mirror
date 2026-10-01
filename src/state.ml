@@ -261,7 +261,7 @@ module TransactionSpec = struct
 
   type selection =
     | Short of { anchor : int; head : int option }
-    | SelectionRange of SelectionRange.t
+    | Selection of EditorSelection.t
 
   type change_spec = { from : int; to_ : int option; insert : string option }
 
@@ -279,7 +279,7 @@ module TransactionSpec = struct
         Jv.set o "anchor" (Jv.of_int anchor);
         Jv.set_if_some o "head" (Option.map Jv.of_int head);
         o
-    | SelectionRange r -> SelectionRange.to_jv r
+    | Selection s -> EditorSelection.to_jv s
 
   let create ?(effects = []) ?selection ?changes ?scroll_into_view () =
     let o = Jv.obj [||] in
