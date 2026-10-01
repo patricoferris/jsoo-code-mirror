@@ -11,12 +11,24 @@ module Completion = struct
   let set_if_some_string t s v = Jv.Jstr.set_if_some t s (Option.map Jstr.v v)
   let set_string t s v = Jv.Jstr.set t s (Jstr.v v)
 
+  type apply =
+    | Text of string
+    | Fn of (View.EditorView.t -> t -> from:int -> to_:int -> unit)
+
+  let apply_to_jv = function
+    | Text s -> Jv.of_string s
+    | Fn f ->
+        Jv.callback ~arity:4 (fun view completion from to_ ->
+            f
+              (View.EditorView.of_jv view)
+              completion ~from:(Jv.to_int from) ~to_:(Jv.to_int to_))
+
   let create ~label ?detail ?info ?apply ?type_ ?boost () =
     let o = Jv.obj [||] in
     set_string o "label" label;
     set_if_some_string o "detail" detail;
     set_if_some_string o "info" info;
-    Jv.set_if_some o "apply" apply;
+    Jv.set_if_some o "apply" (Option.map apply_to_jv apply);
     set_if_some_string o "type" type_;
     Jv.Int.set_if_some o "boost" boost;
     o
