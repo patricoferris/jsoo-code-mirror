@@ -15,7 +15,7 @@ module Action = struct
     in
     let o = Jv.obj [||] in
     Jv.Jstr.set o "name" (Jstr.v name);
-    Jv.set o "apply" (Jv.callback ~arity:1 f');
+    Jv.set o "apply" (Jv.callback ~arity:3 f');
     o
 
   include (Jv.Id : Jv.CONV with type t := t)
