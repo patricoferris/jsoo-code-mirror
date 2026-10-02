@@ -1,6 +1,7 @@
 (* Autocompletion from a fixed list. print_endline is applied as text;
-   List.map is applied by a function, which also inserts an argument
-   placeholder. Accept a completion with Enter or by clicking it. *)
+   List.map is applied by a function, which also inserts argument
+   placeholders and selects the first. Accept a completion with Enter or
+   by clicking it. *)
 
 open Code_mirror
 open State
@@ -15,16 +16,18 @@ let print_endline_ =
     ~apply:(Completion.Text "print_endline \"\"") ()
 
 let list_map =
+  let insert = "List.map f l" in
+  let apply view _completion ~from ~to_ =
+    (* Select the [f] placeholder, so typing replaces it. *)
+    let f = from + String.length "List.map " in
+    EditorView.dispatch view
+      (TransactionSpec.create
+         ~changes:(ChangeSpec.create ~from ~to_ ~insert ())
+         ~selection:(TransactionSpec.Short { anchor = f; head = Some (f + 1) })
+         ())
+  in
   Completion.create ~label:"List.map" ~type_:"function"
-    ~apply:
-      (Completion.Fn
-         (fun view _completion ~from ~to_ ->
-           EditorView.dispatch view
-             (TransactionSpec.create
-                ~changes:
-                  (ChangeSpec.create ~from ~to_ ~insert:"List.map f l" ())
-                ())))
-    ()
+    ~apply:(Completion.Fn apply) ()
 
 let () =
   let completions =
