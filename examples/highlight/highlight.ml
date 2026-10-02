@@ -87,9 +87,10 @@ let underline_selection view =
           effects
         with _ ->
           let x =
-            StateEffect.of_l
+            StateEffect.of_
               (StateEffect.append_config ())
-              [ StateField.extension underline_field; underline_theme ]
+              (Extension.of_list
+                 [ StateField.extension underline_field; underline_theme ])
           in
           Console.log [ Jv.of_string "adding underline fields and theme" ];
           StateEffect.any x :: effects
@@ -98,11 +99,13 @@ let underline_selection view =
       true
 
 let keymap = Keymap.create ~key:"F1" ~run:underline_selection ()
-let ext = Facet.of_ Keymap.keymap keymap
+let ext = Facet.of_ Keymap.keymap [ keymap ]
 
 let init ?doc ?(exts = []) () =
   let config =
-    EditorStateConfig.create ?doc ~extensions:(basic_setup :: ext :: exts) ()
+    EditorStateConfig.create ?doc
+      ~extensions:(Extension.of_list (basic_setup :: ext :: exts))
+      ()
   in
   let state = EditorState.create ~config () in
   let config =

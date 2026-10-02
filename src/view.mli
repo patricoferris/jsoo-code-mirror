@@ -119,5 +119,6 @@ end
 
 val showPanel : (Panel.panel_constructor, Jv.t) State.Facet.t
 
-val line_numbers : ?format:(int -> string) -> unit -> Extension.t
-(** The line-number gutter; [format] renders a line's number. *)
+val line_numbers :
+  ?format_number:(int -> State.EditorState.t -> string) -> unit -> Extension.t
+(** The line-number gutter; [format_number n state] renders line [n]. *)

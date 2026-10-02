@@ -6,15 +6,14 @@ module EditorStateConfig = struct
   let create :
       ?doc:string ->
       ?selection:EditorSelection.t ->
-      ?extensions:Extension.t list ->
+      ?extensions:Extension.t ->
       unit ->
       t =
    fun ?doc ?selection ?extensions () ->
     let o = Jv.obj [||] in
     Jv.Jstr.set_if_some o "doc" (Option.map Jstr.of_string doc);
     Jv.set_if_some o "selection" (Option.map EditorSelection.to_jv selection);
-    Jv.set_if_some o "extensions"
-      (Option.map (Jv.of_list Extension.to_jv) extensions);
+    Jv.set_if_some o "extensions" (Option.map Extension.to_jv extensions);
     of_jv o
 end
 
@@ -216,10 +215,6 @@ module StateEffect = struct
     let conv = conv t in
     Jv.call (to_jv t) "of" [| conv.to_jv v |] |> of_jv conv
 
-  let of_l ty vs =
-    let conv = conv ty in
-    Jv.call (to_jv ty) "of" [| Jv.of_list conv.to_jv vs |] |> of_jv conv
-
   let append_config () : Extension.t StateEffect.t =
     Jv.get (Lazy.force state_effect) "appendConfig"
     |> of_jv { of_jv = Extension.of_jv; to_jv = Extension.to_jv }
@@ -233,8 +228,8 @@ module Compartment : sig
   include Jv.CONV with type t := t
 
   val make : unit -> t
-  val of_ : t -> Extension.t list -> Extension.t
-  val reconfigure : t -> Extension.t list -> Extension.t StateEffect.t
+  val of_ : t -> Extension.t -> Extension.t
+  val reconfigure : t -> Extension.t -> Extension.t StateEffect.t
 end = struct
   type t = Jv.t
 
@@ -243,13 +238,36 @@ end = struct
   let compartment = lazy (Jv.get Jv.global "__CM__Compartment")
   let make () = Jv.new' (Lazy.force compartment) [||]
 
-  let of_ t extensions =
-    Jv.call t "of" [| Jv.of_list Extension.to_jv extensions |]
-    |> Extension.of_jv
+  let of_ t extension =
+    Jv.call t "of" [| Extension.to_jv extension |] |> Extension.of_jv
 
-  let reconfigure t extensions =
-    Jv.call t "reconfigure" [| Jv.of_list Extension.to_jv extensions |]
+  let reconfigure t extension =
+    Jv.call t "reconfigure" [| Extension.to_jv extension |]
     |> StateEffect.of_jv (Tjv.conv Extension.to_jv Extension.of_jv)
+end
+
+(* A ChangeSpec describes changes to the document: one replacement of
+   [from]..[to_] by [insert], or several at once. *)
+module ChangeSpec : sig
+  type t
+
+  include Jv.CONV with type t := t
+
+  val create : from:int -> ?to_:int -> ?insert:string -> unit -> t
+  val of_list : t list -> t
+end = struct
+  type t = Jv.t
+
+  include (Jv.Id : Jv.CONV with type t := t)
+
+  let create ~from ?to_ ?insert () =
+    let o = Jv.obj [||] in
+    Jv.set o "from" (Jv.of_int from);
+    Jv.set_if_some o "to" (Option.map Jv.of_int to_);
+    Jv.set_if_some o "insert" (Option.map Jv.of_string insert);
+    o
+
+  let of_list l = Jv.of_list to_jv l
 end
 
 (* A TransactionSpec describes a transaction to make: the changes,
@@ -263,17 +281,7 @@ module TransactionSpec = struct
 
   type selection =
     | Short of { anchor : int; head : int option }
-    | SelectionRange of SelectionRange.t
-
-  type change_spec = { from : int; to_ : int option; insert : string option }
-
-  let change_spec_to_jv = function
-    | { from; to_; insert } ->
-        let o = Jv.obj [||] in
-        Jv.set o "from" (Jv.of_int from);
-        Jv.set_if_some o "to" (Option.map Jv.of_int to_);
-        Jv.set_if_some o "insert" (Option.map Jv.of_string insert);
-        o
+    | Selection of EditorSelection.t
 
   let selection_to_jv = function
     | Short { anchor; head } ->
@@ -281,12 +289,12 @@ module TransactionSpec = struct
         Jv.set o "anchor" (Jv.of_int anchor);
         Jv.set_if_some o "head" (Option.map Jv.of_int head);
         o
-    | SelectionRange r -> SelectionRange.to_jv r
+    | Selection s -> EditorSelection.to_jv s
 
   let create ?(effects = []) ?selection ?changes ?scroll_into_view () =
     let o = Jv.obj [||] in
     Jv.set_if_some o "selection" (Option.map selection_to_jv selection);
-    Jv.set_if_some o "changes" (Option.map change_spec_to_jv changes);
+    Jv.set_if_some o "changes" (Option.map ChangeSpec.to_jv changes);
     Jv.set o "effects" (Jv.of_list StateEffect.to_jv effects);
     Jv.Bool.set_if_some o "scrollIntoView" scroll_into_view;
     of_jv o

@@ -7,7 +7,9 @@ let basic_setup = Jv.get Jv.global "__CM__basic_setup" |> Extension.of_jv
 
 let init ?doc ?(exts = []) () =
   let config =
-    EditorStateConfig.create ?doc ~extensions:(basic_setup :: exts) ()
+    EditorStateConfig.create ?doc
+      ~extensions:(Extension.of_list (basic_setup :: exts))
+      ()
   in
   let state = EditorState.create ~config () in
   let config =
@@ -58,7 +60,7 @@ let _ =
 
   let keymap = Keymap.create ~key:"F1" ~run () in
 
-  let ext = Facet.of_ Keymap.keymap keymap in
+  let ext = Facet.of_ Keymap.keymap [ keymap ] in
 
   let _editor =
     init ~doc:"Press 'f1' to toggle the panel"

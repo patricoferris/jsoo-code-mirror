@@ -68,7 +68,7 @@ let () =
     true
   in
   let keys =
-    Facet.of_ Keymap.keymap (Keymap.create ~key:"F2" ~run:note_here ())
+    Facet.of_ Keymap.keymap [ Keymap.create ~key:"F2" ~run:note_here () ]
   in
   let initial_doc =
     "Put the cursor on a line and press F2.\n\
@@ -77,7 +77,8 @@ let () =
   in
   let config =
     EditorStateConfig.create ~doc:initial_doc
-      ~extensions:[ basic_setup; keys; StateField.extension notes ]
+      ~extensions:
+        (Extension.of_list [ basic_setup; keys; StateField.extension notes ])
       ()
   in
   let state = EditorState.create ~config () in

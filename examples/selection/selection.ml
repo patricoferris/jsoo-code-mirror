@@ -7,7 +7,9 @@ let basic_setup = Jv.get Jv.global "__CM__basic_setup" |> Extension.of_jv
 
 let init ?doc ?(exts = []) () =
   let config =
-    EditorStateConfig.create ?doc ~extensions:(basic_setup :: exts) ()
+    EditorStateConfig.create ?doc
+      ~extensions:(Extension.of_list (basic_setup :: exts))
+      ()
   in
   let state = EditorState.create ~config () in
   let config =
@@ -24,7 +26,7 @@ let _ =
   let selection = TransactionSpec.Short { anchor = 10; head = Some 20 } in
   let transaction =
     TransactionSpec.create ~selection
-      ~changes:{ from = 10; insert = Some "*"; to_ = None }
+      ~changes:(ChangeSpec.create ~from:10 ~insert:"*" ())
       ()
   in
   EditorView.dispatch view transaction;
