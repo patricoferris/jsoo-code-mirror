@@ -93,7 +93,6 @@ end = struct
     Jv.Bool.set_if_some o "inclusiveEnd" inclusive_end;
     Jv.set_if_some o "class" (Option.map Jv.of_string className);
     Jv.set_if_some o "tagName" (Option.map Jv.of_string tagName);
-    Brr.Console.log [ Jstr.v "Marking"; o ];
     Jv.call (Lazy.force decoration) "mark" [| o |] |> of_jv
 
   let none =
@@ -241,17 +240,13 @@ module Panel = struct
     let to_jv (f : pc) =
       match f with
       | Some x ->
-          Brr.Console.log [ Jstr.v "Got a callback!" ];
           let callback v =
             let v = EditorView.of_jv v in
             let result = x v in
-            (* Brr.Console.log [ result ]; *)
             to_jv result
           in
           Jv.callback ~arity:1 callback
-      | None ->
-          Brr.Console.log [ Jstr.v "No callback!" ];
-          Jv.null
+      | None -> Jv.null
 
     let of_jv _jv = assert false
   end

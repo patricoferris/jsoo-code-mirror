@@ -23,7 +23,7 @@ module Tooltip_view : sig
     ?overlap:bool ->
     ?mount:(View.EditorView.t -> unit) ->
     ?update:(View.EditorView.Update.t -> unit) ->
-    ?positioned:(unit -> unit) ->
+    ?positioned:(coords -> unit) ->
     unit ->
     t
   (** Creates a TooltipView:
@@ -40,7 +40,9 @@ module Tooltip_view : sig
       @param mount
         Called after the tooltip is added to the DOM for the first time.
       @param update Update the DOM element for a change in the view's state.
-      @param positioned Called when the tooltip has been (re)positioned.
+      @param positioned
+        Called when the tooltip has been (re)positioned, with the space
+        available to it.
 
       {{:https://codemirror.net/6/docs/ref/#tooltip.TooltipView} See the
        reference for additional information.} *)

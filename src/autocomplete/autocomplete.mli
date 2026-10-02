@@ -18,11 +18,18 @@ module Completion : sig
 
   include Jv.CONV with type t := t
 
+  (** How to apply a completion. *)
+  type apply =
+    | Text of string  (** Replace the completed range with this text. *)
+    | Fn of (View.EditorView.t -> t -> from:int -> to_:int -> unit)
+        (** [Fn f] applies the completion by calling
+            [f view completion ~from ~to_]. *)
+
   val create :
     label:string ->
     ?detail:string ->
     ?info:string ->
-    ?apply:t ->
+    ?apply:apply ->
     ?type_:string ->
     ?boost:int ->
     unit ->
@@ -33,7 +40,9 @@ module Completion : sig
       @param detail
         An optional short piece of information to show after the label.
       @param info Additional info to show when the completion is selected.
-      @param apply (todo) How to apply the completion.
+      @param apply
+        How to apply the completion; by default its label replaces the completed
+        range.
       @param type
         The type of the completion. This is used to pick an icon to show for the
         completion.
@@ -87,7 +96,7 @@ module Result : sig
     from:int ->
     ?to_:int ->
     options:Completion.t list ->
-    ?span:RegExp.t ->
+    ?valid_for:RegExp.t ->
     ?filter:bool ->
     unit ->
     t
@@ -99,7 +108,7 @@ module Result : sig
         The end of the range that is being completed. Defaults to the main
         cursor position.
       @param options The completions returned.
-      @param span
+      @param valid_for
         When given, further input that causes the part of the document between
         [from] and [to_] to match this regular expression will not query the
         completion source again
