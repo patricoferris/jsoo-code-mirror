@@ -8,6 +8,7 @@ import * as language from "@codemirror/language"
 import { oCaml } from "@codemirror/legacy-modes/mode/mllike"
 import { markdown } from "@codemirror/lang-markdown"
 import { dracula } from 'thememirror';
+import { LSPClient, languageServerExtensions, jumpToDefinitionKeymap } from "@codemirror/lsp-client"
 
 
 joo_global_object.__CM__view = EditorView;
@@ -31,3 +32,4 @@ joo_global_object.__CM__theme_dracula = dracula;
 joo_global_object.__CM__Compartment = Compartment;
 joo_global_object.__CM__WidgetType = WidgetType;
 joo_global_object.__CM__lineNumbers = lineNumbers;
+joo_global_object.__CM__jumpToDefinitionKeymap = jumpToDefinitionKeymap;
