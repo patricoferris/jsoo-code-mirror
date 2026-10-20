@@ -1,0 +1,9 @@
+; code-mirror.state: bindings to @codemirror/state.
+
+(library
+ (name cm_state)
+ (public_name code-mirror.state)
+ (libraries brr)
+ ; Until each package has its own bundle, the single bundle for all of them.
+ (js_of_ocaml
+  (javascript_files ../../includes/bundle.js)))

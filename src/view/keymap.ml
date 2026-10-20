@@ -1,3 +1,5 @@
+open Cm_state
+
 let keymap = lazy (Jv.get Jv.global "__CM__keymap")
 
 type t = Jv.t
@@ -20,6 +22,6 @@ let create ?key ?run () =
   Jv.set_if_some o "run" run;
   o
 
-let keymap : (t list, Jv.t) State.Facet.t =
+let keymap : (t list, Jv.t) Facet.t =
   let iconv = Tjv.{ of_jv = Jv.to_list of_jv; to_jv = Jv.of_list to_jv } in
-  State.Facet.create iconv (Lazy.force keymap)
+  Facet.create iconv (Lazy.force keymap)

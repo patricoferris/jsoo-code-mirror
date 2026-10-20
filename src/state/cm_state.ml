@@ -1,3 +1,5 @@
+module Tjv = Tjv
+module Extension = Extension
 include Types.State
 
 module EditorStateConfig = struct

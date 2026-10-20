@@ -3,11 +3,10 @@
    placeholders and selects the first. Accept a completion with Enter or
    by clicking it. *)
 
-open Code_mirror
-open State
-open View
+open Cm_state
+open Cm_view
 open Brr
-open Autocomplete
+open Cm_autocomplete
 
 let print_endline_ =
   Completion.create ~label:"print_endline" ~type_:"function"
@@ -34,7 +33,8 @@ let () =
   let config =
     EditorStateConfig.create ~doc:"(* Type pr or Li *)\n"
       ~extensions:
-        (Extension.of_list [ basic_setup; create ~config:completions () ])
+        (Extension.of_list
+           [ Code_mirror.basic_setup; create ~config:completions () ])
       ()
   in
   let state = EditorState.create ~config () in

@@ -1,4 +1,4 @@
-open Code_mirror
+open Cm_state
 
 module Tooltip_view : sig
   (** Describes the way a tooltip is displayed. *)

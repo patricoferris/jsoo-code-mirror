@@ -1,4 +1,6 @@
+; code-mirror.lint: bindings to @codemirror/lint.
+
 (library
- (name lint)
+ (name cm_lint)
  (public_name code-mirror.lint)
- (libraries code-mirror))
+ (libraries brr cm_state cm_view))

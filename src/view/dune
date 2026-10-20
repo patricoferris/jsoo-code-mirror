@@ -1,0 +1,6 @@
+; code-mirror.view: bindings to @codemirror/view.
+
+(library
+ (name cm_view)
+ (public_name code-mirror.view)
+ (libraries brr cm_state))

@@ -4,9 +4,8 @@
    holds line wrapping. Each click dispatches a TransactionSpec carrying
    the effect Compartment.reconfigure returns. *)
 
-open Code_mirror
-open State
-open View
+open Cm_state
+open Cm_view
 open Brr
 
 let numbers = Compartment.make ()
@@ -39,7 +38,7 @@ let () =
       ~extensions:
         (Extension.of_list
            [
-             basic_setup;
+             Code_mirror.basic_setup;
              Compartment.of_ numbers (gutter ());
              Compartment.of_ wrapping (wrap ());
            ])

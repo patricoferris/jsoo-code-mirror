@@ -1,0 +1,6 @@
+; code-mirror.language: bindings to @codemirror/language.
+
+(library
+ (name cm_language)
+ (public_name code-mirror.language)
+ (libraries brr cm_state cm_view))

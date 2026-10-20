@@ -1,12 +1,11 @@
-open Code_mirror
-open State
-open View
+open Cm_state
+open Cm_view
 open Brr
 
 let init ?doc ?(exts = []) () =
   let config =
     EditorStateConfig.create ?doc
-      ~extensions:(Extension.of_list (basic_setup :: exts))
+      ~extensions:(Extension.of_list (Code_mirror.basic_setup :: exts))
       ()
   in
   let state = EditorState.create ~config () in

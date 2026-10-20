@@ -1,4 +1,5 @@
-open Code_mirror
+open Cm_state
+open Cm_view
 
 let lint = Jv.get Jv.global "__CM__lint"
 
@@ -7,7 +8,7 @@ module Action = struct
 
   let create ~name f =
     let f' view from to_ =
-      let view = View.EditorView.of_jv view in
+      let view = EditorView.of_jv view in
       let from = Jv.to_int from in
       let to_ = Jv.to_int to_ in
       let result = f ~view ~from ~to_ in
@@ -62,7 +63,7 @@ module Diagnostic = struct
   include (Jv.Id : Jv.CONV with type t := t)
 end
 
-let create ?delay (source : View.EditorView.t -> Diagnostic.t list Fut.t) =
+let create ?delay (source : EditorView.t -> Diagnostic.t list Fut.t) =
   let o =
     match delay with
     | None -> Jv.obj [||]
@@ -70,10 +71,9 @@ let create ?delay (source : View.EditorView.t -> Diagnostic.t list Fut.t) =
   in
   let source' view =
     let fut =
-      Fut.map (Jv.of_list Diagnostic.to_jv)
-      @@ source (View.EditorView.of_jv view)
+      Fut.map (Jv.of_list Diagnostic.to_jv) @@ source (EditorView.of_jv view)
     in
     Fut.to_promise ~ok:Fun.id (Fut.map Result.ok fut)
   in
   let ext = Jv.call lint "linter" [| Jv.callback ~arity:1 source'; o |] in
-  Code_mirror.Extension.of_jv ext
+  Extension.of_jv ext

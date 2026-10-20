@@ -1,4 +1,5 @@
-open Code_mirror
+open Cm_state
+open Cm_view
 module RegExp = RegExp
 
 let autocomplete = Jv.get Jv.global "__CM__autocomplete"
@@ -13,15 +14,14 @@ module Completion = struct
 
   type apply =
     | Text of string
-    | Fn of (View.EditorView.t -> t -> from:int -> to_:int -> unit)
+    | Fn of (EditorView.t -> t -> from:int -> to_:int -> unit)
 
   let apply_to_jv = function
     | Text s -> Jv.of_string s
     | Fn f ->
         Jv.callback ~arity:4 (fun view completion from to_ ->
-            f
-              (View.EditorView.of_jv view)
-              completion ~from:(Jv.to_int from) ~to_:(Jv.to_int to_))
+            f (EditorView.of_jv view) completion ~from:(Jv.to_int from)
+              ~to_:(Jv.to_int to_))
 
   let create ~label ?detail ?info ?apply ?type_ ?boost () =
     let o = Jv.obj [||] in
@@ -40,7 +40,7 @@ module Context = struct
 
   include (Jv.Id : Jv.CONV with type t := t)
 
-  let state t = Jv.get t "state" |> State.EditorState.of_jv
+  let state t = Jv.get t "state" |> EditorState.of_jv
   let pos t = Jv.Int.get t "pos"
   let explicit t = Jv.Bool.get t "explicit"
 
