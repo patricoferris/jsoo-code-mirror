@@ -7,8 +7,6 @@ open State
 open View
 open Brr
 
-let basic_setup = Jv.get Jv.global "__CM__basic_setup" |> Extension.of_jv
-
 (* The positions of every occurrence of [word] in [s]. *)
 let occurrences word s =
   let n = String.length word in

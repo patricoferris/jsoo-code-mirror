@@ -3,7 +3,6 @@ open State
 open View
 open Brr
 
-let basic_setup = Jv.get Jv.global "__CM__basic_setup" |> Extension.of_jv
 let dracula = Jv.get Jv.global "__CM__theme_dracula" |> Extension.of_jv
 
 let init ?doc () =

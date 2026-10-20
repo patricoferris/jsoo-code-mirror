@@ -3,8 +3,6 @@ open State
 open View
 open Brr
 
-let basic_setup = Jv.get Jv.global "__CM__basic_setup" |> Extension.of_jv
-
 let init ?doc ?(exts = []) () =
   let config =
     EditorStateConfig.create ?doc

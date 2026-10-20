@@ -9,8 +9,6 @@ open View
 open Brr
 open Autocomplete
 
-let basic_setup = Jv.get Jv.global "__CM__basic_setup" |> Extension.of_jv
-
 let print_endline_ =
   Completion.create ~label:"print_endline" ~type_:"function"
     ~apply:(Completion.Text "print_endline \"\"") ()

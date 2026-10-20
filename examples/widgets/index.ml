@@ -10,8 +10,6 @@ open State
 open View
 open Brr
 
-let basic_setup = Jv.get Jv.global "__CM__basic_setup" |> Extension.of_jv
-
 (* The effect carries the position to decorate; [map] keeps it right when
    earlier text is inserted or deleted. *)
 let add_note =
