@@ -1,9 +1,6 @@
-open Code_mirror
-open State
-open View
+open Cm_state
+open Cm_view
 open Brr
-
-let basic_setup = Jv.get Jv.global "__CM__basic_setup" |> Extension.of_jv
 
 module Highlight = struct
   type t = { from : int; to_ : int }
@@ -104,7 +101,7 @@ let ext = Facet.of_ Keymap.keymap [ keymap ]
 let init ?doc ?(exts = []) () =
   let config =
     EditorStateConfig.create ?doc
-      ~extensions:(Extension.of_list (basic_setup :: ext :: exts))
+      ~extensions:(Extension.of_list (Code_mirror.basic_setup :: ext :: exts))
       ()
   in
   let state = EditorState.create ~config () in

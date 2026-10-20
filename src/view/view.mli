@@ -1,3 +1,5 @@
+open Cm_state
+
 type editor_view
 (** The type of {!EditorView.t}, declared ahead of it for the callbacks that
     receive the view. *)
@@ -8,11 +10,10 @@ module EditorViewConfig : sig
   include Jv.CONV with type t := t
 
   val create :
-    ?state:State.EditorState.t ->
+    ?state:EditorState.t ->
     ?parent:Brr.El.t ->
     ?root:Brr.Document.t ->
-    ?dispatch_transactions:
-      (State.Transaction.t list -> Types.View.EditorView.t -> unit) ->
+    ?dispatch_transactions:(Transaction.t list -> editor_view -> unit) ->
     unit ->
     t
 
@@ -49,8 +50,8 @@ module Decoration : sig
       [side] orders widgets at the same position, [block] puts it on its own
       line. *)
 
-  val none : t State.RangeSet.t
-  val range : from:int -> ?to_:int -> t -> t State.Range.t
+  val none : t RangeSet.t
+  val range : from:int -> ?to_:int -> t -> t Range.t
 end
 
 module EditorView : sig
@@ -62,15 +63,15 @@ module EditorView : sig
   val create : ?config:EditorViewConfig.t -> unit -> t
   (** Create a new view *)
 
-  val state : t -> State.EditorState.t
+  val state : t -> EditorState.t
   (** Current editor state *)
 
-  val set_state : t -> State.EditorState.t -> unit
+  val set_state : t -> EditorState.t -> unit
 
   module Update : sig
     type t
 
-    val state : t -> State.EditorState.t
+    val state : t -> EditorState.t
 
     val doc_changed : t -> bool
     (** Whether this update changed the document. *)
@@ -81,7 +82,7 @@ module EditorView : sig
   val dom : t -> Brr.El.t
   val line_wrapping : unit -> Extension.t
 
-  val dispatch : t -> State.TransactionSpec.t -> unit
+  val dispatch : t -> TransactionSpec.t -> unit
   (** [dispatch view spec] makes the transaction [spec] describes and applies it
       to the view. *)
 
@@ -97,8 +98,8 @@ module EditorView : sig
 
   val theme : ?dark:bool -> theme -> Extension.t
   val base_theme : theme -> Extension.t
-  val decorations : (Decoration.t State.RangeSet.t, Jv.t) State.Facet.t
-  val update_listener : (Update.t -> unit, Jv.t) State.Facet.t
+  val decorations : (Decoration.t RangeSet.t, Jv.t) Facet.t
+  val update_listener : (Update.t -> unit, Jv.t) Facet.t
 end
 
 module Panel : sig
@@ -117,8 +118,8 @@ module Panel : sig
   type panel_constructor = (EditorView.t -> t) option
 end
 
-val showPanel : (Panel.panel_constructor, Jv.t) State.Facet.t
+val showPanel : (Panel.panel_constructor, Jv.t) Facet.t
 
 val line_numbers :
-  ?format_number:(int -> State.EditorState.t -> string) -> unit -> Extension.t
+  ?format_number:(int -> EditorState.t -> string) -> unit -> Extension.t
 (** The line-number gutter; [format_number n state] renders line [n]. *)

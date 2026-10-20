@@ -1,7 +1,11 @@
 (executable
  (name index)
  (modes js)
- (libraries code-mirror code-mirror.autocomplete))
+ (libraries
+  code-mirror
+  code-mirror.state
+  code-mirror.view
+  code-mirror.autocomplete))
 
 (alias
  (name all)

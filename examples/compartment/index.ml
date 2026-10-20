@@ -4,12 +4,10 @@
    holds line wrapping. Each click dispatches a TransactionSpec carrying
    the effect Compartment.reconfigure returns. *)
 
-open Code_mirror
-open State
-open View
+open Cm_state
+open Cm_view
 open Brr
 
-let basic_setup = Jv.get Jv.global "__CM__basic_setup" |> Extension.of_jv
 let numbers = Compartment.make ()
 let wrapping = Compartment.make ()
 let offset = ref 0
@@ -40,7 +38,7 @@ let () =
       ~extensions:
         (Extension.of_list
            [
-             basic_setup;
+             Code_mirror.basic_setup;
              Compartment.of_ numbers (gutter ());
              Compartment.of_ wrapping (wrap ());
            ])

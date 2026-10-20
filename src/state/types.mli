@@ -54,11 +54,3 @@ module State : sig
     val create : 'input Tjv.conv -> Jv.t -> ('input, 'output) t
   end
 end
-
-module View : sig
-  module EditorView : sig
-    type t
-
-    include Jv.CONV with type t := t
-  end
-end

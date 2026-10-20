@@ -1,7 +1,7 @@
 (executable
  (name index)
  (modes js)
- (libraries code-mirror))
+ (libraries code-mirror.state))
 
 (alias
  (name all)

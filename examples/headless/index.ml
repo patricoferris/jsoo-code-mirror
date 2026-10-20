@@ -3,8 +3,7 @@
    effects that ran, and the state that resulted. None of this needs an
    editor on the page, so the results are printed as plain text. *)
 
-open Code_mirror
-open State
+open Cm_state
 open Brr
 
 let show lines =

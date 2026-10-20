@@ -1,7 +1,7 @@
 (executable
  (name selection)
  (modes js)
- (libraries code-mirror))
+ (libraries code-mirror code-mirror.state code-mirror.view))
 
 (alias
  (name all)

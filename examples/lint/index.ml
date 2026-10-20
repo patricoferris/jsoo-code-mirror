@@ -2,12 +2,9 @@
    "note" a hint. Hover over a marked word to see its diagnostic; its
    Remove action deletes the word. *)
 
-open Code_mirror
-open State
-open View
+open Cm_state
+open Cm_view
 open Brr
-
-let basic_setup = Jv.get Jv.global "__CM__basic_setup" |> Extension.of_jv
 
 (* The positions of every occurrence of [word] in [s]. *)
 let occurrences word s =
@@ -20,7 +17,7 @@ let occurrences word s =
   go 0 []
 
 let remove =
-  Lint.Action.create ~name:"Remove" (fun ~view ~from ~to_ ->
+  Cm_lint.Action.create ~name:"Remove" (fun ~view ~from ~to_ ->
       EditorView.dispatch view
         (TransactionSpec.create
            ~changes:(ChangeSpec.create ~from ~to_ ~insert:"" ())
@@ -31,7 +28,7 @@ let diagnostics view =
   let flag word severity message =
     List.map
       (fun from ->
-        Lint.Diagnostic.create ~source:"demo" ~actions:[ remove ] ~from
+        Cm_lint.Diagnostic.create ~source:"demo" ~actions:[ remove ] ~from
           ~to_:(from + String.length word)
           ~severity ~message ())
       (occurrences word doc)
@@ -51,7 +48,8 @@ let () =
   let config =
     EditorStateConfig.create ~doc
       ~extensions:
-        (Extension.of_list [ basic_setup; Lint.create ~delay:100 diagnostics ])
+        (Extension.of_list
+           [ Code_mirror.basic_setup; Cm_lint.create ~delay:100 diagnostics ])
       ()
   in
   let state = EditorState.create ~config () in

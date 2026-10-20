@@ -1,15 +1,13 @@
-open Code_mirror
-open State
-open View
+open Cm_state
+open Cm_view
 open Brr
 
-let basic_setup = Jv.get Jv.global "__CM__basic_setup" |> Extension.of_jv
 let dracula = Jv.get Jv.global "__CM__theme_dracula" |> Extension.of_jv
 
 let init ?doc () =
   let config =
     EditorStateConfig.create ?doc
-      ~extensions:(Extension.of_list [ dracula; basic_setup ])
+      ~extensions:(Extension.of_list [ dracula; Code_mirror.basic_setup ])
       ()
   in
   let state = EditorState.create ~config () in

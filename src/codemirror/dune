@@ -1,0 +1,6 @@
+; code-mirror: the codemirror package's basicSetup.
+
+(library
+ (name code_mirror)
+ (public_name code-mirror)
+ (libraries brr cm_state))

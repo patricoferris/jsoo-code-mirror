@@ -1,4 +1,6 @@
+; code-mirror.autocomplete: bindings to @codemirror/autocomplete.
+
 (library
- (name autocomplete)
+ (name cm_autocomplete)
  (public_name code-mirror.autocomplete)
- (libraries code-mirror))
+ (libraries brr cm_state cm_view cm_language))

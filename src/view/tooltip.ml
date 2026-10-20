@@ -1,4 +1,4 @@
-open Code_mirror
+open Cm_state
 
 module Tooltip_view = struct
   type t = Jv.t

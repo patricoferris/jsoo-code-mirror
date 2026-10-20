@@ -8,5 +8,5 @@ module Language = struct
   let g = Jv.get g "StreamLanguage"
 
   let define (l : t) =
-    Jv.call g "define" [| to_jv l |] |> Code_mirror.Extension.of_jv
+    Jv.call g "define" [| to_jv l |] |> Cm_state.Extension.of_jv
 end

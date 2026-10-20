@@ -1,4 +1,5 @@
-open Code_mirror
+open Cm_state
+open Cm_view
 
 val lint : Jv.t
 (** Global lint value *)
@@ -8,7 +9,7 @@ module Action : sig
   (** The type for actions associated with a diagnostic *)
 
   val create :
-    name:string -> (view:View.EditorView.t -> from:int -> to_:int -> unit) -> t
+    name:string -> (view:EditorView.t -> from:int -> to_:int -> unit) -> t
   (** [create ~name f] makes a new action with a function to call when the user
       activates the action *)
 end
@@ -39,6 +40,4 @@ module Diagnostic : sig
 end
 
 val create :
-  ?delay:int ->
-  (View.EditorView.t -> Diagnostic.t list Fut.t) ->
-  Code_mirror.Extension.t
+  ?delay:int -> (EditorView.t -> Diagnostic.t list Fut.t) -> Extension.t

@@ -5,12 +5,9 @@
    lines as the text above them changes. The button replaces the whole
    document: notes inside it go, one at its very end is kept. *)
 
-open Code_mirror
-open State
-open View
+open Cm_state
+open Cm_view
 open Brr
-
-let basic_setup = Jv.get Jv.global "__CM__basic_setup" |> Extension.of_jv
 
 (* The effect carries the position to decorate; [map] keeps it right when
    earlier text is inserted or deleted. *)
@@ -78,7 +75,8 @@ let () =
   let config =
     EditorStateConfig.create ~doc:initial_doc
       ~extensions:
-        (Extension.of_list [ basic_setup; keys; StateField.extension notes ])
+        (Extension.of_list
+           [ Code_mirror.basic_setup; keys; StateField.extension notes ])
       ()
   in
   let state = EditorState.create ~config () in

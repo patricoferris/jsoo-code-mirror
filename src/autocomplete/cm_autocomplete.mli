@@ -1,4 +1,5 @@
-open Code_mirror
+open Cm_state
+open Cm_view
 
 (** Most of this documention originate from the code-mirror reference.
 
@@ -21,7 +22,7 @@ module Completion : sig
   (** How to apply a completion. *)
   type apply =
     | Text of string  (** Replace the completed range with this text. *)
-    | Fn of (View.EditorView.t -> t -> from:int -> to_:int -> unit)
+    | Fn of (EditorView.t -> t -> from:int -> to_:int -> unit)
         (** [Fn f] applies the completion by calling
             [f view completion ~from ~to_]. *)
 
@@ -60,7 +61,7 @@ module Context : sig
 
   include Jv.CONV with type t := t
 
-  val state : t -> State.EditorState.t
+  val state : t -> EditorState.t
   (** The editor state that the completion happens in. *)
 
   val pos : t -> int
@@ -148,5 +149,5 @@ val config :
     {{:https://codemirror.net/6/docs/ref/#autocomplete.autocompletion^config}
      the online docs}.*)
 
-val create : ?config:config -> unit -> Code_mirror.Extension.t
+val create : ?config:config -> unit -> Extension.t
 (** Autocompleter *)
